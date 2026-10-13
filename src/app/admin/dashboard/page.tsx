@@ -3,6 +3,7 @@ import { getSettings } from "@/lib/settings";
 import { computeStatusTampil, formatRupiah, getPeriodeBulan } from "@/lib/status";
 import { getPrevPeriodeBulan, formatPeriodeLabel } from "@/lib/periode";
 import { TrendBadge } from "@/components/trend-badge";
+import { RecentActivity } from "@/components/recent-activity";
 import Link from "next/link";
 import { Users, Image as ImageIcon, Wallet, Settings as SettingsIcon, ArrowRight, CheckCircle2, CircleDashed, AlertTriangle } from "lucide-react";
 
@@ -191,47 +192,69 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      {/* Quick links */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Link href="/admin/struk" className="brutal-card brutal-hover-lift p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div
-                className="flex items-center justify-center w-10 h-10"
-                style={{ background: "var(--status-pending)", border: "2.5px solid var(--ink)", borderRadius: 8 }}
-              >
-                <ImageIcon size={20} strokeWidth={2.5} color="#78350f" />
-              </div>
-              <div>
-                <div className="font-extrabold">Verifikasi Struk</div>
-                <div className="text-xs text-[#6b6b6b] font-semibold">
-                  {strukPending} struk menunggu
+      {/* Recent activity + Quick links in 2-column layout on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <RecentActivity limit={5} />
+        <section className="flex flex-col gap-4">
+          <Link href="/admin/struk" className="brutal-card brutal-hover-lift p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center justify-center w-10 h-10"
+                  style={{ background: "var(--status-pending)", border: "2.5px solid var(--ink)", borderRadius: 8 }}
+                >
+                  <ImageIcon size={20} strokeWidth={2.5} color="#78350f" />
+                </div>
+                <div>
+                  <div className="font-extrabold">Verifikasi Struk</div>
+                  <div className="text-xs text-[#6b6b6b] font-semibold">
+                    {strukPending} struk menunggu
+                  </div>
                 </div>
               </div>
+              <ArrowRight size={20} strokeWidth={2.5} />
             </div>
-            <ArrowRight size={20} strokeWidth={2.5} />
-          </div>
-        </Link>
-        <Link href="/admin/settings" className="brutal-card brutal-hover-lift p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div
-                className="flex items-center justify-center w-10 h-10"
-                style={{ background: "var(--accent-primary)", border: "2.5px solid var(--ink)", borderRadius: 8 }}
-              >
-                <SettingsIcon size={20} strokeWidth={2.5} />
-              </div>
-              <div>
-                <div className="font-extrabold">Pengaturan</div>
-                <div className="text-xs text-[#6b6b6b] font-semibold">
-                  Iuran: {formatRupiah(settings.nominalIuran)}
+          </Link>
+          <Link href="/admin/settings" className="brutal-card brutal-hover-lift p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center justify-center w-10 h-10"
+                  style={{ background: "var(--accent-primary)", border: "2.5px solid var(--ink)", borderRadius: 8 }}
+                >
+                  <SettingsIcon size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <div className="font-extrabold">Pengaturan</div>
+                  <div className="text-xs text-[#6b6b6b] font-semibold">
+                    Iuran: {formatRupiah(settings.nominalIuran)}
+                  </div>
                 </div>
               </div>
+              <ArrowRight size={20} strokeWidth={2.5} />
             </div>
-            <ArrowRight size={20} strokeWidth={2.5} />
-          </div>
-        </Link>
-      </section>
+          </Link>
+          <Link href="/admin/anggota" className="brutal-card brutal-hover-lift p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center justify-center w-10 h-10"
+                  style={{ background: "var(--accent-secondary)", border: "2.5px solid var(--ink)", borderRadius: 8 }}
+                >
+                  <Users size={20} strokeWidth={2.5} color="#ffffff" />
+                </div>
+                <div>
+                  <div className="font-extrabold">Data Anggota</div>
+                  <div className="text-xs text-[#6b6b6b] font-semibold">
+                    {anggota.length} anggota terdaftar
+                  </div>
+                </div>
+              </div>
+              <ArrowRight size={20} strokeWidth={2.5} />
+            </div>
+          </Link>
+        </section>
+      </div>
 
       {/* Info card */}
       <section

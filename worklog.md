@@ -1,6 +1,35 @@
 # SIDU — Worklog
 
-## Status: MVP LENGKAP + Enhancements (Cron Review #9 selesai)
+## Status: MVP LENGKAP + Enhancements (Cron Review #10 selesai)
+
+## Checkpoint 12: Recent Activity Feed di Dashboard + Quick Links Reorganized
+
+### Yang Selesai di Round Ini
+
+**Todo 43 — Recent Activity Feed di Dashboard Admin (NEW)**
+- Komponen `RecentActivity` (`src/components/recent-activity.tsx`) — server component async:
+  - Query 5 audit log terbaru dari DB.
+  - Setiap entry: icon (color-coded per aksi), label human-readable, targetLabel, timestamp (date + time).
+  - Link "Lihat Semua" → `/admin/audit-log`.
+  - Empty state: "Belum ada aktivitas tercatat."
+  - Icon mapping untuk 12 jenis aksi (APPROVE_STRUK, REJECT_STRUK, UPDATE_STATUS, UPDATE_ANGGOTA, DELETE_ANGGOTA, ADD_ANGGOTA, IMPORT_ANGGOTA, UPDATE_SETTINGS, ADD_TRANSAKSI, DELETE_TRANSAKSI, RESET_SIKLUS, GENERATE_LAPORAN).
+- Integrasi di dashboard admin: 2-column layout (Recent Activity + Quick Links stack).
+- Quick links di-reorganize: sekarang vertical stack di kolom kanan dengan 3 cards (Verifikasi Struk, Pengaturan, Data Anggota).
+- Verifikasi via agent-browser: dashboard menampilkan "Aktivitas Terbaru" dengan 5 entri (Approve Struk x3, Update Status x2), timestamp "13 Okt 16.35".
+
+**Polish UI Tambahan**
+- Dashboard layout: 2-column grid (Recent Activity + Quick Links) — lebih efisien gunakan space.
+- Recent activity: icon box 8x8 dengan border, color-coded per aksi type.
+- Quick links: 3 cards vertical (Verifikasi Struk, Pengaturan, Data Anggota) dengan brutal-hover-lift.
+
+### Verifikasi End-to-End
+- ✅ Recent Activity: 5 entri terbaru tampil dengan icon + label + targetLabel + timestamp
+- ✅ Dashboard layout: 2-column (activity + quick links)
+- ✅ Quick links: 3 cards (Verifikasi Struk, Pengaturan, Data Anggota)
+- ✅ Semua 18 halaman return 200
+- ✅ Lint bersih (0 error, 0 warning)
+
+---
 
 ## Checkpoint 11: Notification Badge Sidebar + Empty States Expanded
 
