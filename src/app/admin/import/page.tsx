@@ -11,6 +11,8 @@ import {
   FileSpreadsheet,
   Download,
 } from "lucide-react";
+import { toast as sonnerToast } from "@/components/ui/sonner";
+import { useEscapeToClose } from "@/hooks/use-escape-to-close";
 
 type Result = {
   ok: boolean;
@@ -53,14 +55,26 @@ export default function AdminImportPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal import");
       setResult(data);
+      sonnerToast.success("Import selesai", {
+        description: `${data.inserted} berhasil, ${data.skipped} dilewati dari ${data.total} baris`,
+      });
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal import");
+      const msg = e instanceof Error ? e.message : "Gagal import";
+      setErr(msg);
+      sonnerToast.error(msg);
     } finally {
       setLoading(false);
       setFile(null);
       if (fileRef.current) fileRef.current.value = "";
     }
   }
+
+  // Esc to close warning modal
+  useEscapeToClose(() => {
+    setShowWarning(false);
+    setFile(null);
+    if (fileRef.current) fileRef.current.value = "";
+  }, !loading);
 
   function downloadTemplate() {
     const template = [

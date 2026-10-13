@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { StatusBadge, statusBadgeFromStruk } from "@/components/status-badge";
 import { StrukImage } from "@/components/struk-image";
+import { toast as sonnerToast } from "@/components/ui/sonner";
+import { useEscapeToClose } from "@/hooks/use-escape-to-close";
 
 type StrukItem = {
   id: string;
@@ -62,6 +64,13 @@ export function StrukListClient({
   const previewStruk = strukList.find((s) => s.id === previewId);
   const rejectStruk = strukList.find((s) => s.id === rejectId);
 
+  // Esc to close modals (hanya saat tidak loading)
+  useEscapeToClose(() => setPreviewId(null), !actionLoading);
+  useEscapeToClose(() => {
+    setRejectId(null);
+    setRejectAlasan("");
+  }, !actionLoading);
+
   async function handleApprove(id: string) {
     setActionLoading(id);
     setErr(null);
@@ -73,9 +82,14 @@ export function StrukListClient({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal approve");
+      sonnerToast.success("Struk disetujui", {
+        description: `Anggota LUNAS + transaksi MASUK Rp ${data.nominal?.toLocaleString("id-ID") ?? ""}`,
+      });
       router.refresh();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal approve");
+      const msg = e instanceof Error ? e.message : "Gagal approve";
+      setErr(msg);
+      sonnerToast.error(msg);
     } finally {
       setActionLoading(null);
     }
@@ -85,6 +99,7 @@ export function StrukListClient({
     if (!rejectStruk) return;
     if (!rejectAlasan.trim()) {
       setErr("Alasan penolakan wajib diisi.");
+      sonnerToast.error("Alasan penolakan wajib diisi.");
       return;
     }
     setActionLoading(rejectStruk.id);
@@ -97,11 +112,16 @@ export function StrukListClient({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal reject");
+      sonnerToast.success("Struk ditolak", {
+        description: "Notifikasi WA dikirim ke anggota",
+      });
       setRejectId(null);
       setRejectAlasan("");
       router.refresh();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal reject");
+      const msg = e instanceof Error ? e.message : "Gagal reject";
+      setErr(msg);
+      sonnerToast.error(msg);
     } finally {
       setActionLoading(null);
     }

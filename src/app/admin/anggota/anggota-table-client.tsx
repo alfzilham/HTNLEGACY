@@ -19,10 +19,16 @@ import {
   Phone,
   Copy,
   Check,
+  FileText,
+  Calendar,
+  Building2,
+  Wallet,
 } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { Pagination } from "@/components/pagination";
+import { StrukImage } from "@/components/struk-image";
 import { toast as sonnerToast } from "@/components/ui/sonner";
+import { useEscapeToClose } from "@/hooks/use-escape-to-close";
 
 type AnggotaItem = {
   id: string;
@@ -61,6 +67,28 @@ export function AnggotaTableClient({
   const [editLoading, setEditLoading] = useState(false);
   // Add new
   const [showAdd, setShowAdd] = useState(false);
+  // Detail modal (lihat struk historis anggota)
+  const [detailTarget, setDetailTarget] = useState<AnggotaItem | null>(null);
+  const [detailData, setDetailData] = useState<{
+    anggota: AnggotaItem & { createdAt: string };
+    strukList: Array<{
+      id: string;
+      imageUrl: string;
+      statusStruk: string;
+      periodeBulan: string;
+      createdAt: string;
+      verifiedAt: string | null;
+      ditolakAlasan: string | null;
+      ocrSource: string | null;
+      ocrParsed: {
+        nominal: number | null;
+        tanggal: string | null;
+        namaBank: string | null;
+        rawOcrText: string;
+      } | null;
+    }>;
+  } | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   // Toast (using sonner)
   // const [toast, setToast] = useState (legacy) — replaced with sonner
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
@@ -93,6 +121,31 @@ export function AnggotaTableClient({
   useEffect(() => {
     setPage(0);
   }, [search, genderFilter, statusFilter]);
+
+  // Esc to close modals (hanya saat tidak loading)
+  useEscapeToClose(() => setEditTarget(null), !editLoading);
+  useEscapeToClose(() => setDeleteTarget(null), !deleteLoading);
+  useEscapeToClose(() => setShowAdd(false), true);
+  useEscapeToClose(() => {
+    setDetailTarget(null);
+    setDetailData(null);
+  }, !detailLoading);
+
+  async function loadDetail(id: string) {
+    setDetailLoading(true);
+    setDetailData(null);
+    try {
+      const res = await fetch(`/api/anggota/${id}/struk`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Gagal memuat detail");
+      setDetailData(data);
+    } catch (e) {
+      sonnerToast.error(e instanceof Error ? e.message : "Gagal memuat detail");
+      setDetailTarget(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  }
 
   async function toggleReveal(a: AnggotaItem) {
     if (revealed[a.id]) {
@@ -336,6 +389,18 @@ export function AnggotaTableClient({
                         <button
                           type="button"
                           onClick={() => {
+                            setDetailTarget(a);
+                            loadDetail(a.id);
+                          }}
+                          className="brutal-btn brutal-btn-neutral p-1.5"
+                          aria-label={`Lihat detail struk ${a.namaLengkap}`}
+                          title="Lihat detail & riwayat struk"
+                        >
+                          <FileText size={14} strokeWidth={2.5} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
                             setEditTarget(a);
                             setEditStatus(a.status === "LUNAS" ? "LUNAS" : "BELUM_LUNAS");
                           }}
@@ -408,13 +473,25 @@ export function AnggotaTableClient({
                   <button
                     type="button"
                     onClick={() => {
+                      setDetailTarget(a);
+                      loadDetail(a.id);
+                    }}
+                    className="brutal-btn brutal-btn-neutral px-3 py-1.5 text-xs flex-1"
+                    aria-label={`Lihat detail ${a.namaLengkap}`}
+                  >
+                    <FileText size={12} strokeWidth={2.5} />
+                    <span>Detail</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
                       setEditTarget(a);
                       setEditStatus(a.status === "LUNAS" ? "LUNAS" : "BELUM_LUNAS");
                     }}
                     className="brutal-btn brutal-btn-neutral px-3 py-1.5 text-xs flex-1"
                   >
                     <Pencil size={12} strokeWidth={2.5} />
-                    <span>Edit Status</span>
+                    <span>Edit</span>
                   </button>
                   <button
                     type="button"
@@ -569,6 +646,146 @@ export function AnggotaTableClient({
         pageSize={PAGE_SIZE}
         onPageChange={setPage}
       />
+
+      {/* Detail modal — lihat struk historis anggota */}
+      {detailTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Detail struk ${detailTarget.namaLengkap}`}
+        >
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => {
+              setDetailTarget(null);
+              setDetailData(null);
+            }}
+            aria-hidden="true"
+          />
+          <div className="relative brutal-card brutal-animate-in w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5">
+            <button
+              type="button"
+              onClick={() => {
+                setDetailTarget(null);
+                setDetailData(null);
+              }}
+              className="brutal-btn brutal-btn-ghost p-1.5 absolute top-3 right-3"
+              aria-label="Tutup"
+            >
+              <X size={18} strokeWidth={2.5} />
+            </button>
+
+            <div className="mb-4 pr-8">
+              <h3 className="font-extrabold text-lg">Riwayat Struk Anggota</h3>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                {detailTarget.gender === "PRIA" ? (
+                  <Mars size={14} strokeWidth={2.5} className="text-[var(--accent-secondary)]" />
+                ) : (
+                  <Venus size={14} strokeWidth={2.5} className="text-[var(--accent-secondary)]" />
+                )}
+                <span className="font-bold">{detailTarget.namaLengkap}</span>
+                <StatusBadge status={detailTarget.statusTampil as "LUNAS" | "BELUM_LUNAS" | "TERTUNGGAK"} />
+              </div>
+            </div>
+
+            {detailLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 size={28} strokeWidth={2.5} className="animate-spin" />
+              </div>
+            ) : detailData ? (
+              <div className="flex flex-col gap-3">
+                {detailData.strukList.length === 0 ? (
+                  <div className="text-center py-8 text-sm font-semibold text-[#6b6b6b]">
+                    Belum ada struk yang pernah diupload.
+                  </div>
+                ) : (
+                  detailData.strukList.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex items-start gap-3 p-3"
+                      style={{ background: "var(--bg-base)", border: "2px solid var(--ink)", borderRadius: 8 }}
+                    >
+                      <div
+                        className="shrink-0 w-16 h-16 flex items-center justify-center"
+                        style={{ border: "2px solid var(--ink)", borderRadius: 6, overflow: "hidden" }}
+                      >
+                        <StrukImage
+                          src={s.imageUrl}
+                          alt={`Struk ${detailTarget.namaLengkap}`}
+                          className="w-full h-full object-cover"
+                          iconSize={20}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <div className="text-xs font-bold text-[#6b6b6b]">
+                            {new Date(s.createdAt).toLocaleString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                          <StatusBadge
+                            status={
+                              s.statusStruk === "APPROVED"
+                                ? "APPROVED"
+                                : s.statusStruk === "REJECTED"
+                                ? "REJECTED"
+                                : "PENDING"
+                            }
+                          />
+                        </div>
+                        <div className="text-xs font-semibold text-[#6b6b6b]">
+                          Periode: {s.periodeBulan}
+                          {s.verifiedAt && ` · Diproses: ${new Date(s.verifiedAt).toLocaleDateString("id-ID")}`}
+                        </div>
+                        {s.ocrParsed && (
+                          <div className="flex flex-wrap gap-3 mt-1.5 text-xs">
+                            {s.ocrParsed.nominal !== null && (
+                              <span className="flex items-center gap-1 font-semibold text-[#6b6b6b]">
+                                <Wallet size={11} strokeWidth={2.5} />
+                                <span className="tabular-nums">Rp {s.ocrParsed.nominal.toLocaleString("id-ID")}</span>
+                              </span>
+                            )}
+                            {s.ocrParsed.tanggal && (
+                              <span className="flex items-center gap-1 font-semibold text-[#6b6b6b]">
+                                <Calendar size={11} strokeWidth={2.5} />
+                                <span>{s.ocrParsed.tanggal}</span>
+                              </span>
+                            )}
+                            {s.ocrParsed.namaBank && (
+                              <span className="flex items-center gap-1 font-semibold text-[#6b6b6b]">
+                                <Building2 size={11} strokeWidth={2.5} />
+                                <span>{s.ocrParsed.namaBank}</span>
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {s.ditolakAlasan && (
+                          <div
+                            className="mt-1.5 px-2 py-1 text-xs font-semibold"
+                            style={{
+                              background: "var(--status-tertunggak-bg)",
+                              border: "1.5px solid var(--status-tertunggak)",
+                              borderRadius: 4,
+                              color: "#7f1d1d",
+                            }}
+                          >
+                            Ditolak: {s.ditolakAlasan}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {/* Unused import guard */}
       <span className="hidden">

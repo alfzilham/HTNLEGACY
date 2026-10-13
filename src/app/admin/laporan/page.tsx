@@ -13,6 +13,7 @@ import {
   Lock,
   X,
 } from "lucide-react";
+import { toast as sonnerToast } from "@/components/ui/sonner";
 
 type Info = {
   periode: string;
@@ -98,10 +99,15 @@ export default function AdminLaporanPage() {
 
       setDownloadProgress(100);
       setDownloaded(true);
+      sonnerToast.success("Laporan .zip berhasil diunduh", {
+        description: `Periode ${info?.periode}`,
+      });
       // Setelah download sukses, transisi ke modal 2 (konfirmasi reset)
       setTimeout(() => setStep("confirm-reset"), 600);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal download");
+      const msg = e instanceof Error ? e.message : "Gagal download";
+      setErr(msg);
+      sonnerToast.error(msg);
       setStep("idle");
     }
   }
@@ -115,10 +121,15 @@ export default function AdminLaporanPage() {
       if (!res.ok) throw new Error(d.error ?? "Gagal reset");
       setResetResult(d.message);
       setStep("done");
+      sonnerToast.success("Siklus bulanan direset", {
+        description: `${d.anggotaReset} anggota → BELUM_LUNAS, ${d.transaksiTetap} transaksi tetap`,
+      });
       // Refresh info
       router.refresh();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal reset");
+      const msg = e instanceof Error ? e.message : "Gagal reset";
+      setErr(msg);
+      sonnerToast.error(msg);
     } finally {
       setResetLoading(false);
     }

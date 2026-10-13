@@ -1,6 +1,58 @@
 # SIDU — Worklog
 
-## Status: MVP LENGKAP + Enhancements (Cron Review #3 selesai)
+## Status: MVP LENGKAP + Enhancements (Cron Review #4 selesai)
+
+## Checkpoint 6: Full Sonner Toast Integration + Esc-to-close All Modals + Anggota Detail Modal
+
+### Yang Selesai di Round Ini
+
+**Todo 26 — Sonner Toast Integration ke Semua Aksi (NEW)**
+- **Upload struk modal**: success ("Struk berhasil diupload" + desc "Menunggu verifikasi admin"), error, password verified, password salah.
+- **Admin struk verify**: approve success ("Struk disetujui" + desc "Anggota LUNAS + transaksi MASUK Rp 15.000"), reject success ("Struk ditolak" + desc "Notifikasi WA dikirim ke anggota"), all errors.
+- **Admin settings**: save success ("Pengaturan berhasil disimpan"), barcode upload success ("Barcode pembayaran berhasil diperbarui"), errors.
+- **Admin import**: success ("Import selesai" + desc "X berhasil, Y dilewati dari Z baris"), errors.
+- **Admin laporan**: download success ("Laporan .zip berhasil diunduh" + desc periode), reset success ("Siklus bulanan direset" + desc "X anggota → BELUM_LUNAS, Y transaksi tetap"), errors.
+- All toasts use brutalist styling (border 3px, shadow offset, color-coded success/error/warning).
+- Verifikasi via agent-browser: approve struk → toast "Struk disetujui\nAnggota LUNAS + transaksi MASUK Rp 15.000" muncul top-right.
+
+**Todo 27 — Esc-to-close ke Semua Modal (NEW)**
+- **Upload struk modal**: Esc tutup saat tidak di step success & tidak loading.
+- **Admin struk preview modal**: Esc tutup saat tidak loading.
+- **Admin struk reject modal**: Esc tutup saat tidak loading.
+- **Admin anggota edit status modal**: Esc tutup saat tidak loading.
+- **Admin anggota delete confirm modal**: Esc tutup saat tidak loading.
+- **Admin anggota add new modal**: Esc tutup (selalu dismissible).
+- **Admin anggota detail modal**: Esc tutup saat tidak loading.
+- **Admin import warning modal**: Esc tutup saat tidak loading.
+- Semua pakai hook `useEscapeToClose(onClose, dismissible)` yang reusable.
+- Verifikasi via agent-browser: buka struk preview → Esc → modal tertutup.
+
+**Todo 28 — Anggota Detail Modal (NEW FITUR)**
+- API `GET /api/anggota/[id]/struk` — return anggota + semua struk historis (semua periode, semua status) dengan OCR parsed.
+- Tombol "Detail" (icon FileText) di kolom Aksi tabel anggota (desktop) & card (mobile).
+- Modal "Riwayat Struk Anggota" menampilkan:
+  - Header: nama, gender, badge status
+  - List struk historis: thumbnail (pakai StrukImage dengan fallback), tanggal upload, status badge, periode, tanggal diproses, OCR details (nominal/tanggal/bank), alasan ditolak (jika REJECTED).
+  - Empty state: "Belum ada struk yang pernah diupload."
+- Pakai StrukImage component (fallback "Gambar dihapus" untuk struk post-reset).
+- Esc-to-close + click outside to close.
+- Verifikasi via agent-browser: Dewi Test detail modal menampilkan 1 struk APPROVED dengan OCR Rp 15.000, 2026-10-13, BCA. Budi Santoso detail modal menampilkan "Belum ada struk".
+
+**Polish UI Tambahan**
+- Brutal-animate-in class ke detail modal (fade-in + translateY animation).
+- Mobile card layout: 3 buttons (Detail/Edit/Hapus) dengan flex-1 untuk konsisten.
+- All modals now consistent: Esc-to-close + click outside + X button (untuk yang dismissible).
+
+### Verifikasi End-to-End (agent-browser)
+- ✅ Sonner toast: approve struk → "Struk disetujui\nAnggota LUNAS + transaksi MASUK Rp 15.000" muncul
+- ✅ Esc-to-close: struk preview modal → Esc → tertutup
+- ✅ Anggota detail modal: Dewi Test → 1 struk APPROVED + OCR details; Budi → empty state
+- ✅ Detail modal: StrukImage fallback "Gambar dihapus" untuk struk post-reset
+- ✅ Mobile card: 3 action buttons (Detail/Edit/Hapus)
+- ✅ Semua 18 halaman return 200
+- ✅ Lint bersih (0 error, 0 warning)
+
+---
 
 ## Checkpoint 5: Bug Fix (Broken Images) + Pagination + Esc-to-close + Sonner Toast + Gender Breakdown
 

@@ -15,6 +15,7 @@ import {
   Upload,
   CheckCircle2,
 } from "lucide-react";
+import { toast as sonnerToast } from "@/components/ui/sonner";
 
 type Settings = {
   id: string;
@@ -76,9 +77,12 @@ export default function AdminSettingsPage() {
       if (!res.ok) throw new Error(data.error ?? "Gagal menyimpan");
       setS(data);
       setMsg("Pengaturan berhasil disimpan.");
+      sonnerToast.success("Pengaturan berhasil disimpan");
       router.refresh();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal menyimpan");
+      const msg = e instanceof Error ? e.message : "Gagal menyimpan";
+      setErr(msg);
+      sonnerToast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -99,9 +103,12 @@ export default function AdminSettingsPage() {
       if (!res.ok) throw new Error(data.error ?? "Gagal upload barcode");
       setS((prev) => (prev ? { ...prev, barcodeImageUrl: data.url } : prev));
       setMsg("Barcode pembayaran berhasil diperbarui.");
+      sonnerToast.success("Barcode pembayaran berhasil diperbarui");
       router.refresh();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal upload");
+      const msg = e instanceof Error ? e.message : "Gagal upload";
+      setErr(msg);
+      sonnerToast.error(msg);
     } finally {
       setUploading(false);
     }

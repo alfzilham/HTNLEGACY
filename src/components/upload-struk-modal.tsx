@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Loader2, X, KeyRound, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
 import { StatusBadge } from "./status-badge";
 import { useEscapeToClose } from "@/hooks/use-escape-to-close";
+import { toast as sonnerToast } from "@/components/ui/sonner";
 
 type AnggotaItem = {
   id: string;
@@ -46,12 +47,17 @@ export function UploadStrukModal({
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
-        setPwdErr(data.error ?? "Password salah.");
+        const msg = data.error ?? "Password salah.";
+        setPwdErr(msg);
+        sonnerToast.error(msg);
         return;
       }
       setStep("upload");
+      sonnerToast.success("Password terverifikasi");
     } catch {
-      setPwdErr("Gagal terhubung ke server.");
+      const msg = "Gagal terhubung ke server.";
+      setPwdErr(msg);
+      sonnerToast.error(msg);
     } finally {
       setPwdLoading(false);
     }
@@ -72,16 +78,23 @@ export function UploadStrukModal({
       });
       const data = await res.json();
       if (!res.ok) {
-        setUploadErr(data.error ?? "Gagal upload struk.");
+        const msg = data.error ?? "Gagal upload struk.";
+        setUploadErr(msg);
+        sonnerToast.error(msg);
         return;
       }
       setStep("success");
+      sonnerToast.success("Struk berhasil diupload", {
+        description: "Menunggu verifikasi admin",
+      });
       setTimeout(() => {
         onSuccess();
         onClose();
       }, 1500);
     } catch {
-      setUploadErr("Gagal terhubung ke server.");
+      const msg = "Gagal terhubung ke server.";
+      setUploadErr(msg);
+      sonnerToast.error(msg);
     } finally {
       setUploadLoading(false);
     }
