@@ -237,9 +237,12 @@ export default async function ProfilPage() {
             Riwayat Struk {getPeriodeBulan()}
           </h2>
           {strukList.length === 0 ? (
-            <div className="text-center py-6 text-sm font-semibold text-[#6b6b6b]">
-              Belum ada struk diupload periode ini.
-            </div>
+            <EmptyState
+              icon={FileText}
+              title="Belum ada struk periode ini"
+              description="Upload struk pembayaran Anda dari halaman beranda untuk diverifikasi admin."
+              compact
+            />
           ) : (
             <div className="flex flex-col gap-2">
               {strukList.map((s) => (
@@ -310,9 +313,12 @@ export default async function ProfilPage() {
             Riwayat Transaksi Iuran
           </h2>
           {transaksiList.length === 0 ? (
-            <div className="text-center py-6 text-sm font-semibold text-[#6b6b6b]">
-              Belum ada transaksi iuran tercatat.
-            </div>
+            <EmptyState
+              icon={Wallet}
+              title="Belum ada transaksi iuran"
+              description="Riwayat pembayaran iuran Anda akan muncul di sini setelah struk disetujui admin."
+              compact
+            />
           ) : (
             <div className="flex flex-col gap-2">
               {transaksiList.map((t) => (

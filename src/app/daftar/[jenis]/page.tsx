@@ -6,6 +6,7 @@ import { getCurrentAnggota } from "@/lib/auth";
 import { computeStatusTampil } from "@/lib/status";
 import { StatusBadge } from "@/components/status-badge";
 import { CheckCircle2, CircleDashed, AlertTriangle } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -134,9 +135,18 @@ export default async function DaftarPage({
             </div>
           </div>
           {list.length === 0 ? (
-            <div className="brutal-card-flat p-8 text-center text-[#6b6b6b] font-semibold">
-              Tidak ada anggota dengan status ini.
-            </div>
+            <EmptyState
+              icon={cfg.icon}
+              title={`Tidak ada anggota ${cfg.label}`}
+              description={
+                jenis === "lunas"
+                  ? "Belum ada anggota yang sudah membayar iuran bulan ini. Bagikan info barcode pembayaran ke anggota."
+                  : jenis === "belum-lunas"
+                  ? "Semua anggota sudah membayar iuran bulan ini. Mantap!"
+                  : "Tidak ada anggota yang tertunggak. Semua masih dalam batas waktu."
+              }
+              compact
+            />
           ) : (
             <AnggotaListClient anggota={list} myId={me?.id ?? null} />
           )}

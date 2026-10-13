@@ -1,6 +1,47 @@
 # SIDU — Worklog
 
-## Status: MVP LENGKAP + Enhancements (Cron Review #8 selesai)
+## Status: MVP LENGKAP + Enhancements (Cron Review #9 selesai)
+
+## Checkpoint 11: Notification Badge Sidebar + Empty States Expanded
+
+### Yang Selesai di Round Ini
+
+**Bug Fix**
+- **API `/api/laporan/info` missing `strukPending` field** — endpoint return `strukApproved` tapi tidak `strukPending`. Fixed: tambah query `db.struk.count({ where: { statusStruk: "PENDING" } })` + return `strukPending` di response. Ini menyebabkan PendingStrukBadge component tidak bisa render (count selalu undefined → 0).
+
+**Todo 41 — Notification Badge di Sidebar Admin (NEW)**
+- Komponen `PendingStrukBadge` (`src/components/pending-struk-badge.tsx`):
+  - Client component yang fetch `/api/laporan/info` untuk dapat count struk PENDING.
+  - Auto-refresh saat route change (usePathname dependency) + setiap 30 detik (interval).
+  - Badge brutalist: kuning (status-pending), border 1.5px, border-radius 999, tabular-nums, "99+" jika > 99.
+  - Hidden jika count = 0 (tidak pollute sidebar saat tidak ada pending).
+  - aria-label untuk accessibility.
+- Integrasi di `AdminShell` sidebar:
+  - `NavItem` component support optional `badge` prop (React.ReactNode).
+  - Badge di-pass ke "Verifikasi Struk" nav item: `badge={it.href === "/admin/struk" ? <PendingStrukBadge /> : undefined}`.
+  - Muncul di sidebar desktop & mobile drawer.
+- Verifikasi via agent-browser: upload 1 struk → reload → sidebar "Verifikasi Struk" show badge "1".
+
+**Todo 42 — Empty State ke Daftar Filter & Profil (Polish)**
+- Apply `EmptyState` component ke 3 empty states lagi:
+  1. **Daftar filter** (`/daftar/[jenis]`) — empty state dengan icon sesuai status (CheckCircle2/CircleDashed/AlertTriangle) + description kontekstual per jenis (lunas/belum-lunas/tertunggak).
+  2. **Profil riwayat struk** (`/profil`) — "Belum ada struk periode ini" dengan icon FileText + CTA description.
+  3. **Profil riwayat transaksi** (`/profil`) — "Belum ada transaksi iuran" dengan icon Wallet + description.
+- Semua pakai `compact` mode (p-6 instead of p-10) untuk fit dalam section card.
+- Konsistensi: 5 empty states total sekarang pakai EmptyState component (admin struk, admin audit log, daftar filter, profil struk, profil transaksi).
+
+**Polish UI Tambahan**
+- Notification badge: kuning dengan border, auto-refresh 30s, hidden saat 0.
+- Empty states: description kontekstual per jenis (lunas vs belum-lunas vs tertunggak punya message berbeda).
+
+### Verifikasi End-to-End
+- ✅ Notification badge: upload struk → sidebar show "1" next to "Verifikasi Struk"
+- ✅ Empty states: daftar filter & profil riwayat pakai EmptyState component
+- ✅ API fix: `/api/laporan/info` sekarang return `strukPending` field
+- ✅ Semua 18 halaman return 200
+- ✅ Lint bersih (0 error, 0 warning)
+
+---
 
 ## Checkpoint 10: Empty State Component + Confirm Dialog + Profil Stats
 

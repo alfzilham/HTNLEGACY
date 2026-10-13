@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminGlobalSearch } from "@/components/admin-global-search";
+import { PendingStrukBadge } from "@/components/pending-struk-badge";
 
 const NAV = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
@@ -37,12 +38,14 @@ function NavItem({
   icon: Icon,
   active,
   onNavigate,
+  badge,
 }: {
   href: string;
   label: string;
   icon: React.ElementType;
   active: boolean;
   onNavigate?: () => void;
+  badge?: React.ReactNode;
 }) {
   return (
     <Link
@@ -53,6 +56,7 @@ function NavItem({
     >
       <Icon size={20} strokeWidth={2} />
       <span>{label}</span>
+      {badge}
     </Link>
   );
 }
@@ -147,6 +151,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 label={it.label}
                 icon={it.icon}
                 active={pathname === it.href}
+                badge={it.href === "/admin/struk" ? <PendingStrukBadge /> : undefined}
               />
             ))}
           </nav>

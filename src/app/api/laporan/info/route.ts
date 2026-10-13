@@ -16,9 +16,12 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const periode = getPeriodeBulan();
-  const [strukApproved, anggotaLunas, transaksiMasuk, settings] = await Promise.all([
+  const [strukApproved, strukPending, anggotaLunas, transaksiMasuk, settings] = await Promise.all([
     db.struk.count({
       where: { periodeBulan: periode, statusStruk: "APPROVED" },
+    }),
+    db.struk.count({
+      where: { statusStruk: "PENDING" },
     }),
     db.anggota.count({ where: { status: "LUNAS" } }),
     db.transaksi.aggregate({
@@ -31,6 +34,7 @@ export async function GET() {
   return NextResponse.json({
     periode,
     strukApproved,
+    strukPending,
     anggotaLunas,
     totalKasMasuk: transaksiMasuk._sum.nominal ?? 0,
     nominalIuran: settings.nominalIuran,
