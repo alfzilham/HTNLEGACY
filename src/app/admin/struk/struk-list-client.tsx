@@ -17,6 +17,7 @@ import {
   Download,
 } from "lucide-react";
 import { StatusBadge, statusBadgeFromStruk } from "@/components/status-badge";
+import { StrukImage } from "@/components/struk-image";
 
 type StrukItem = {
   id: string;
@@ -118,7 +119,7 @@ export function StrukListClient({
             style={{ border: "2.5px solid var(--ink)", borderRadius: 8, overflow: "hidden" }}
             aria-label={`Lihat struk ${s.anggota.namaLengkap}`}
           >
-            <img
+            <StrukImage
               src={s.imageUrl}
               alt={`Struk ${s.anggota.namaLengkap}`}
               className="w-full h-full object-cover"
@@ -318,10 +319,11 @@ export function StrukListClient({
                   className="w-full bg-[var(--bg-base)] flex items-center justify-center relative"
                   style={{ border: "3px solid var(--ink)", borderRadius: 8, minHeight: 300 }}
                 >
-                  <img
+                  <StrukImage
                     src={previewStruk.imageUrl}
                     alt={`Struk ${previewStruk.anggota.namaLengkap}`}
                     className="max-w-full max-h-[400px] object-contain"
+                    iconSize={48}
                   />
                   <a
                     href={previewStruk.imageUrl}

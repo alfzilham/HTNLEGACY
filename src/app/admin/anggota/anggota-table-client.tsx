@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Eye,
@@ -21,6 +21,8 @@ import {
   Check,
 } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
+import { Pagination } from "@/components/pagination";
+import { toast as sonnerToast } from "@/components/ui/sonner";
 
 type AnggotaItem = {
   id: string;
@@ -45,6 +47,8 @@ export function AnggotaTableClient({
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "LUNAS" | "BELUM_LUNAS" | "TERTUNGGAK"
   >("ALL");
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
 
   // Password reveal: map anggotaId → revealed password (or null/loading)
   const [revealed, setRevealed] = useState<Record<string, string | null | "loading">>({});
@@ -57,14 +61,19 @@ export function AnggotaTableClient({
   const [editLoading, setEditLoading] = useState(false);
   // Add new
   const [showAdd, setShowAdd] = useState(false);
-  // Toast
+  // Toast (using sonner)
+  // const [toast, setToast] = useState (legacy) — replaced with sonner
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
   // Copied state
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   function showToast(type: "ok" | "err", msg: string) {
+    // Update legacy state for inline toast (top-right card)
     setToast({ type, msg });
     setTimeout(() => setToast(null), 3500);
+    // Also fire sonner toast
+    if (type === "ok") sonnerToast.success(msg);
+    else sonnerToast.error(msg);
   }
 
   const filtered = anggota.filter((a) => {
@@ -74,6 +83,16 @@ export function AnggotaTableClient({
     const matchStatus = statusFilter === "ALL" || a.statusTampil === statusFilter;
     return matchSearch && matchGender && matchStatus;
   });
+
+  // Reset page ke 0 saat filter/search berubah
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const currentPage = Math.min(page, Math.max(0, totalPages - 1));
+  const paged = filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
+  // Reset page jika search/filter berubah
+  useEffect(() => {
+    setPage(0);
+  }, [search, genderFilter, statusFilter]);
 
   async function toggleReveal(a: AnggotaItem) {
     if (revealed[a.id]) {
@@ -260,11 +279,11 @@ export function AnggotaTableClient({
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((a, idx) => (
+                {paged.map((a, idx) => (
                   <tr
                     key={a.id}
                     style={{
-                      borderBottom: idx < filtered.length - 1 ? "1.5px solid var(--ink)" : "none",
+                      borderBottom: idx < paged.length - 1 ? "1.5px solid var(--ink)" : "none",
                     }}
                   >
                     <td className="px-4 py-3">
@@ -345,7 +364,7 @@ export function AnggotaTableClient({
 
           {/* Mobile cards */}
           <div className="lg:hidden flex flex-col gap-3">
-            {filtered.map((a) => (
+            {paged.map((a) => (
               <div key={a.id} className="brutal-card-flat p-4">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2 min-w-0">
@@ -541,6 +560,15 @@ export function AnggotaTableClient({
           onError={(msg) => showToast("err", msg)}
         />
       )}
+
+      {/* Pagination */}
+      <Pagination
+        page={currentPage}
+        totalPages={totalPages}
+        totalItems={filtered.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+      />
 
       {/* Unused import guard */}
       <span className="hidden">

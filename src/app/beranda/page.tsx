@@ -205,6 +205,65 @@ export default async function BerandaPage() {
           </div>
         </section>
 
+        {/* Breakdown per gender */}
+        <section className="brutal-card p-5">
+          <h2 className="font-extrabold text-lg mb-4 flex items-center gap-2">
+            <Users size={20} strokeWidth={2.5} />
+            Partisipasi per Gender
+          </h2>
+          {(() => {
+            const pria = list.filter((a) => a.gender === "PRIA");
+            const wanita = list.filter((a) => a.gender === "WANITA");
+            const priaLunas = pria.filter((a) => a.statusTampil === "LUNAS").length;
+            const wanitaLunas = wanita.filter((a) => a.statusTampil === "LUNAS").length;
+            const priaPct = pria.length > 0 ? Math.round((priaLunas / pria.length) * 100) : 0;
+            const wanitaPct = wanita.length > 0 ? Math.round((wanitaLunas / wanita.length) * 100) : 0;
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { label: "Pria", lunas: priaLunas, total: pria.length, pct: priaPct, color: "var(--accent-secondary)", fg: "#ffffff" },
+                  { label: "Wanita", lunas: wanitaLunas, total: wanita.length, pct: wanitaPct, color: "#f9a8d4", fg: "#7f1d1d" },
+                ].map((g) => (
+                  <div key={g.label} className="p-4" style={{ background: "var(--bg-base)", border: "2.5px solid var(--ink)", borderRadius: 10 }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="flex items-center justify-center w-8 h-8"
+                          style={{ background: g.color, border: "2px solid var(--ink)", borderRadius: 6 }}
+                        >
+                          <span className="font-extrabold text-xs" style={{ color: g.fg }}>
+                            {g.label[0]}
+                          </span>
+                        </div>
+                        <span className="font-extrabold">{g.label}</span>
+                      </div>
+                      <span className="text-lg font-extrabold tabular-nums">{g.pct}%</span>
+                    </div>
+                    <div
+                      className="h-3 mb-2"
+                      style={{ background: "var(--surface)", border: "2px solid var(--ink)", borderRadius: 999, overflow: "hidden" }}
+                    >
+                      <div
+                        className="h-full transition-all"
+                        style={{
+                          width: `${g.pct}%`,
+                          background: g.pct === 100 ? "var(--status-lunas)" : g.color,
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-semibold text-[#6b6b6b]">
+                      <span>{g.lunas} dari {g.total} lunas</span>
+                      {g.pct === 100 && g.total > 0 && (
+                        <span className="font-bold" style={{ color: "#14532d" }}>Selesai!</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </section>
+
         {/* Daftar anggota */}
         <section>
           <div className="flex items-center justify-between mb-3">

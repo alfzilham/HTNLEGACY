@@ -1,6 +1,59 @@
 # SIDU — Worklog
 
-## Status: MVP LENGKAP + Enhancements (Cron Review #2 selesai)
+## Status: MVP LENGKAP + Enhancements (Cron Review #3 selesai)
+
+## Checkpoint 5: Bug Fix (Broken Images) + Pagination + Esc-to-close + Sonner Toast + Gender Breakdown
+
+### Yang Selesai di Round Ini
+
+**Bug Fixes**
+1. **Broken images di admin struk setelah reset siklus** — setelah reset siklus bulanan, 4 struk "sudah diproses" tetap di DB dengan `imageUrl` pointing ke file yang sudah dihapus (sesuai SPEC §8.3 "imageUrl jadi stale link — diterima untuk bebaskan storage"). Tapi UX-nya jelek (broken image icon). **Fixed**: buat komponen `StrukImage` dengan fallback — tampilkan placeholder "Gambar dihapus" (icon ImageOff) saat image onError. Pakai `key={src}` trick untuk reset state otomatis saat src berubah (menghindari setState-in-effect anti-pattern).
+2. **Lint error di StrukImage** (setState in useEffect) → refactored pakai `key` prop trick + useState langsung.
+
+**Todo 22 — Pagination di Admin Anggota (NEW)**
+- Komponen `Pagination` reusable di `src/components/pagination.tsx` — buttons first/prev/next/last + page indicator "1 / N" + text "Menampilkan X-Y dari Z anggota".
+- Integrasi di `anggota-table-client.tsx`: PAGE_SIZE=20, state `page`, `useEffect` reset page ke 0 saat search/filter berubah.
+- Slice `filtered` → `paged` untuk render (table desktop + cards mobile).
+- Threshold: pagination muncul hanya jika totalPages > 1 (saat ini belum terlihat karena baru 6 anggota — akan muncul saat > 20).
+
+**Todo 23 — Keyboard Shortcut Esc untuk Tutup Modal (NEW)**
+- Hook `useEscapeToClose(onClose, dismissible)` di `src/hooks/use-escape-to-close.ts`.
+- Applied ke `upload-struk-modal.tsx` — Esc tutup modal saat tidak di step success & tidak loading.
+- Pattern reusable: tinggal call `useEscapeToClose(onClose, canDismiss)` di komponen modal lain.
+- `dismissible` flag: false untuk modal wajib (modal 1 laporan), true untuk modal biasa.
+
+**Todo 24 — Sonner Toast Notifications (NEW)**
+- Setup Sonner Toaster di `src/components/ui/sonner.tsx` dengan brutalist styling (border 3px, shadow offset, color-coded per type success/error/warning).
+- Mount di `src/app/layout.tsx` (parallel dengan radix Toaster lama).
+- Position top-right, 4 detik auto-dismiss.
+- Integrasi di `anggota-table-client.tsx`: `showToast()` sekarang fire both legacy inline toast + sonner toast.
+- Verifikasi: edit status Budi → sonner toast "Status Budi Santoso → BELUM LUNAS" muncul.
+
+**Todo 25 — Gender Breakdown di Beranda (NEW)**
+- Section "Partisipasi per Gender" di beranda — 2 card (Pria/Wanita) dengan:
+  - Mini progress bar (% lunas)
+  - Counter "X dari Y lunas"
+  - Badge "Selesai!" jika 100%
+  - Color-coded: Pria (ungu accent-secondary), Wanita (pink)
+- Implementasi sesuai CONTEXT.md "pemisahan data berdasarkan gender".
+- Pakai IIFE untuk compute pria/wanita stats inline di JSX.
+
+**Polish UI Tambahan**
+- StrukImage component: fallback placeholder untuk broken images (icon ImageOff + "Gambar dihapus" text).
+- Sonner toast: brutalist styling (border 3px solid, shadow offset, color-coded).
+- Pagination: brutalist buttons dengan disabled state.
+- Gender breakdown: mini progress bar dengan conditional color (lunas green saat 100%).
+
+### Verifikasi End-to-End (agent-browser)
+- ✅ Admin struk setelah reset siklus: 4 struk "sudah diproses" show placeholder "Gambar dihapus" (no broken images)
+- ✅ Admin anggota: pagination code jalan (akan muncul saat > 20 anggota)
+- ✅ Upload struk modal: Esc tutup modal saat di step password/upload
+- ✅ Admin anggota edit status: sonner toast "Status Budi Santoso → BELUM_LUNAS" muncul top-right
+- ✅ Beranda: "Partisipasi per Gender" section dengan 2 card + mini progress bar
+- ✅ Semua 18 halaman (8 admin + 10 user) return 200
+- ✅ Lint bersih (0 error, 0 warning)
+
+---
 
 ## Checkpoint 4: Bug Fix + Fitur Baru (Profil, Trend, Export CSV) + Polish UI
 
@@ -187,10 +240,10 @@
 
 ### Rekomendasi Phase Berikutnya
 1. **Production hardening**: ganti WAHA stub ke WAHA instance sungguhan, set GEMINI_API_KEY & ENCRYPTION_KEY production, migrasi ke PostgreSQL.
-2. **Fitur tambahan**: reminder WA H-sebelum deadline (PRD Could Have), export PDF laporan, multi-admin dengan akun individual & log terpisah, global search di top bar admin, pagination tabel anggota untuk skala > 100 orang.
-3. **Polish**: apply Skeleton component ke loading states (sudah dibuat, belum dipakai), optimistic UI updates, micro-interactions (button press feedback, card hover lift lebih banyak), dark mode toggle (next-themes sudah ada tapi PRD bilang no dark mode MVP).
+2. **Fitur tambahan**: reminder WA H-sebelum deadline (PRD Could Have), export PDF laporan, multi-admin dengan akun individual & log terpisah, global search di top bar admin, bulk approve struk, anggota detail modal di admin (lihat struk historis anggota).
+3. **Polish**: apply Skeleton component ke loading states (sudah dibuat, belum dipakai), optimistic UI updates, micro-interactions, apply useEscapeToClose ke semua modal (preview struk, edit status, delete, reject, import warning, reset confirm), apply sonner toast ke upload struk success/error & struk approve/reject feedback.
 4. **Testing**: unit test untuk crypto.ts (encrypt/decrypt round-trip), integration test untuk upload struk → OCR → approve flow, E2E test untuk siklus bulanan, test edge cases (OCR gagal, password salah 3x, import file invalid).
-5. **UX improvements**: toast notifications (sonner sudah installed), keyboard shortcuts (Esc tutup modal, Enter submit form), confirmation dialogs yang lebih jelas, help tooltips.
+5. **UX improvements**: apply sonner toast ke semua aksi (upload struk, approve/reject struk, import, settings save, laporan generate, reset siklus), keyboard shortcuts (Enter submit form), confirmation dialogs yang lebih jelas, help tooltips, loading skeletons.
 
 ### Unresolved Issues / Risks
 - **SQLite untuk MVP**: kalau scale > 100 anggota dengan banyak struk, perlu migrate ke PostgreSQL. Schema sudah compatible (tinggal ganti provider + enum native).
@@ -199,3 +252,5 @@
 - **Password reversible encryption**: trade-off keamanan disadari (DB + key bocor = password terbuka). Mitigasi: edukasi user pakai password unik.
 - **Storage struk local filesystem**: tidak ada backup otomatis. Reset siklus hapus permanen. Production perlu Supabase Storage atau S3.
 - **No rate limiting**: endpoint login/verify-password tidak ada rate limit. Rentan brute-force (ARCHITECTURE.md §4.4 bilang "disarankan" tapi belum implementasi).
+- **Sonner toast belum full integration**: baru di admin anggota. Perlu apply ke upload struk, struk verify, import, settings, laporan.
+- **Esc-to-close baru di upload modal**: perlu apply ke modal lain (preview struk, edit status, delete confirm, reject, import warning, reset confirm).

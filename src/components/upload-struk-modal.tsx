@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Loader2, X, KeyRound, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
 import { StatusBadge } from "./status-badge";
+import { useEscapeToClose } from "@/hooks/use-escape-to-close";
 
 type AnggotaItem = {
   id: string;
@@ -29,6 +30,10 @@ export function UploadStrukModal({
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Escape to close — hanya saat tidak di step success (post-upload) atau loading
+  const canDismiss = step !== "success" && !uploadLoading && !pwdLoading;
+  useEscapeToClose(onClose, canDismiss);
 
   async function verifyPassword() {
     setPwdErr(null);
