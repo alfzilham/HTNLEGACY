@@ -3,6 +3,7 @@ import { parseOcrResult } from "@/lib/ocr";
 import { getPeriodeBulan } from "@/lib/status";
 import { StrukListClient } from "./struk-list-client";
 import { Inbox } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -36,22 +37,11 @@ export default async function AdminStrukPage() {
       </header>
 
       {strukList.length === 0 ? (
-        <div className="brutal-card p-10 flex flex-col items-center text-center gap-3">
-          <div
-            className="flex items-center justify-center w-16 h-16"
-            style={{
-              background: "var(--bg-base)",
-              border: "3px solid var(--ink)",
-              borderRadius: 12,
-            }}
-          >
-            <Inbox size={28} strokeWidth={2} className="text-[#9a9a9a]" />
-          </div>
-          <h2 className="font-extrabold text-lg">Belum ada struk</h2>
-          <p className="text-sm font-semibold text-[#6b6b6b] max-w-sm">
-            Anggota yang upload struk pembayaran akan muncul di sini untuk diverifikasi.
-          </p>
-        </div>
+        <EmptyState
+          icon={Inbox}
+          title="Belum ada struk"
+          description="Anggota yang upload struk pembayaran akan muncul di sini untuk diverifikasi."
+        />
       ) : (
         <StrukListClient strukList={parsed} periode={periode} />
       )}

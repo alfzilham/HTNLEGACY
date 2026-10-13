@@ -15,6 +15,7 @@ import {
   Mars,
   Venus,
 } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 
 type LogItem = {
   id: string;
@@ -75,10 +76,11 @@ export function AuditLogList({ initialLogs }: { initialLogs: LogItem[] }) {
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="brutal-card-flat p-8 text-center text-[#6b6b6b] font-semibold">
-          <ScrollText size={32} strokeWidth={1.5} className="mx-auto mb-2 opacity-50" />
-          Belum ada audit log.
-        </div>
+        <EmptyState
+          icon={ScrollText}
+          title="Belum ada audit log"
+          description="Riwayat aksi admin akan muncul di sini setelah ada aktivitas seperti approve/reject struk, edit anggota, atau reset siklus."
+        />
       ) : (
         <div className="brutal-card-flat max-h-[600px] overflow-y-auto">
           <div className="flex flex-col">

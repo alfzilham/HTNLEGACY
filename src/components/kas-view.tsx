@@ -28,6 +28,7 @@ import {
   Download,
 } from "lucide-react";
 import { formatRupiah } from "@/lib/status";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 type Transaksi = {
   id: string;
@@ -71,6 +72,9 @@ export function KasView({
   const [keterangan, setKeterangan] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // Confirm dialog state
+  const [deleteTarget, setDeleteTarget] = useState<Transaksi | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   async function loadBulan(newBulan: string) {
     setBulan(newBulan);
@@ -114,14 +118,24 @@ export function KasView({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Hapus transaksi ini?")) return;
+    // Trigger confirm dialog instead of native confirm()
+    const target = data.list.find((t) => t.id === id);
+    if (target) setDeleteTarget(target);
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
     try {
-      const res = await fetch(`/api/transaksi/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/transaksi/${deleteTarget.id}`, { method: "DELETE" });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error ?? "Gagal hapus");
+      setDeleteTarget(null);
       await loadBulan(bulan);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Gagal hapus");
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -519,6 +533,23 @@ export function KasView({
           </div>
         )}
       </section>
+
+      {/* Confirm dialog for delete transaksi */}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Hapus Transaksi?"
+        description={
+          deleteTarget
+            ? `"${deleteTarget.keterangan}" (${deleteTarget.tipe} ${formatRupiah(deleteTarget.nominal)}) akan dihapus permanen.`
+            : ""
+        }
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        loading={deleteLoading}
+        variant="danger"
+      />
     </div>
   );
 }

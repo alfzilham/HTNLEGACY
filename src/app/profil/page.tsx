@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { EmptyState } from "@/components/empty-state";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { getCurrentAnggota } from "@/lib/auth";
@@ -6,7 +7,7 @@ import { computeStatusTampil, formatRupiah, getPeriodeBulan, normalizePhone } fr
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { StatusBadge } from "@/components/status-badge";
-import { User, Phone, Calendar, Wallet, QrCode, ArrowRight, CheckCircle2, Clock, FileText } from "lucide-react";
+import { User, Phone, Calendar, Wallet, QrCode, ArrowRight, CheckCircle2, Clock, FileText, TrendingUp, Receipt } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export default async function ProfilPage() {
   const me = await getCurrentAnggota();
   if (!me) redirect("/login");
 
-  const [anggota, settings, strukList, transaksiList] = await Promise.all([
+  const [anggota, settings, strukList, transaksiList, allTransaksi, strukCount] = await Promise.all([
     db.anggota.findUnique({
       where: { id: me.id },
       select: {
@@ -37,6 +38,13 @@ export default async function ProfilPage() {
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
+    db.transaksi.findMany({
+      where: { anggotaId: me.id, tipe: "MASUK" },
+      select: { nominal: true, periodeBulan: true },
+    }),
+    db.struk.count({
+      where: { anggotaId: me.id, statusStruk: "APPROVED" },
+    }),
   ]);
 
   if (!anggota) redirect("/login");
@@ -44,6 +52,11 @@ export default async function ProfilPage() {
     anggota.status,
     settings.deadlineTanggal
   );
+
+  // Compute stats
+  const totalDibayar = allTransaksi.reduce((sum, t) => sum + t.nominal, 0);
+  const bulanLunas = new Set(allTransaksi.map((t) => t.periodeBulan)).size;
+  const totalStrukApproved = strukCount;
 
   return (
     <AppShell>
@@ -165,6 +178,56 @@ export default async function ProfilPage() {
               </Link>
             </div>
           )}
+        </section>
+
+        {/* Statistik pembayaran */}
+        <section className="brutal-card p-5">
+          <h2 className="font-extrabold text-lg mb-4 flex items-center gap-2">
+            <TrendingUp size={20} strokeWidth={2.5} />
+            Statistik Pembayaran
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div
+              className="p-4"
+              style={{ background: "var(--status-lunas-bg)", border: "2.5px solid #14532d", borderRadius: 10 }}
+            >
+              <div className="flex items-center gap-1.5 mb-2">
+                <Wallet size={14} strokeWidth={2.5} color="#14532d" />
+                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: "#14532d" }}>
+                  Total Dibayar
+                </span>
+              </div>
+              <div className="text-xl font-extrabold tabular-nums break-all" style={{ color: "#14532d" }}>
+                {formatRupiah(totalDibayar)}
+              </div>
+            </div>
+            <div
+              className="p-4"
+              style={{ background: "var(--accent-primary)", border: "2.5px solid var(--ink)", borderRadius: 10 }}
+            >
+              <div className="flex items-center gap-1.5 mb-2">
+                <Calendar size={14} strokeWidth={2.5} />
+                <span className="text-xs font-bold uppercase tracking-wide">
+                  Bulan Lunas
+                </span>
+              </div>
+              <div className="text-xl font-extrabold tabular-nums">{bulanLunas}</div>
+              <div className="text-[10px] font-semibold text-[#6b6b6b] mt-0.5">periode</div>
+            </div>
+            <div
+              className="p-4"
+              style={{ background: "var(--bg-base)", border: "2.5px solid var(--ink)", borderRadius: 10 }}
+            >
+              <div className="flex items-center gap-1.5 mb-2">
+                <Receipt size={14} strokeWidth={2.5} className="text-[#6b6b6b]" />
+                <span className="text-xs font-bold uppercase tracking-wide text-[#6b6b6b]">
+                  Struk Disetujui
+                </span>
+              </div>
+              <div className="text-xl font-extrabold tabular-nums">{totalStrukApproved}</div>
+              <div className="text-[10px] font-semibold text-[#6b6b6b] mt-0.5">total historis</div>
+            </div>
+          </div>
         </section>
 
         {/* Riwayat struk bulan ini */}

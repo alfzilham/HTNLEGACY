@@ -1,6 +1,52 @@
 # SIDU — Worklog
 
-## Status: MVP LENGKAP + Enhancements (Cron Review #7 selesai)
+## Status: MVP LENGKAP + Enhancements (Cron Review #8 selesai)
+
+## Checkpoint 10: Empty State Component + Confirm Dialog + Profil Stats
+
+### Yang Selesai di Round Ini
+
+**Todo 38 — Empty State Component (NEW)**
+- Komponen `EmptyState` (`src/components/empty-state.tsx`) reusable:
+  - Props: icon, title, description, optional action (label + href/onClick), compact mode.
+  - Brutalist style: card-flat dengan border 2.5px, icon box dengan shadow offset, text bold.
+  - Applied ke 2 halaman:
+    1. **Admin struk** (`/admin/struk`) — empty state "Belum ada struk" dengan icon Inbox.
+    2. **Admin audit log** (`/admin/audit-log`) — empty state "Belum ada audit log" dengan icon ScrollText + description kontekstual.
+  - Konsistensi: semua empty states sekarang pakai komponen yang sama (sebelumnya text-only ad-hoc).
+
+**Todo 39 — Confirm Dialog Component (NEW)**
+- Komponen `ConfirmDialog` (`src/components/confirm-dialog.tsx`) reusable:
+  - Props: open, title, description, confirmLabel, cancelLabel, onConfirm, onCancel, loading, variant (danger/primary/neutral), icon.
+  - Brutalist style: card dengan border 3px, shadow offset, animate-in.
+  - Mendukung loading state (disable both buttons saat loading).
+  - Replace native `confirm()` di `kas-view.tsx` (handleDelete transaksi):
+    - Sebelumnya: `if (!confirm("Hapus transaksi ini?")) return;` — jelek, tidak styled, blocking.
+    - Sekarang: ConfirmDialog dengan title "Hapus Transaksi?", description kontekstual ("Sumbangan donatur (MASUK Rp 50.000) akan dihapus permanen."), buttons "Ya, Hapus" (danger) + "Batal".
+  - Click outside to cancel (kecuali saat loading).
+  - Verifikasi via agent-browser: click delete → dialog muncul → Batal → dialog tertutup.
+
+**Todo 40 — Stats di Profil Page (NEW)**
+- Section "Statistik Pembayaran" di `/profil` — anggota lihat statistik pembayaran diri sendiri:
+  - **Total Dibayar**: sum semua transaksi MASUK (Rp X) — card hijau.
+  - **Bulan Lunas**: count unique periodeBulan dari transaksi MASUK — card kuning.
+  - **Struk Disetujui**: count struk APPROVED historis — card netral.
+- Query tambahan: `allTransaksi` (select nominal + periodeBulan) + `strukCount` (count APPROVED).
+- Verifikasi via agent-browser: Test User 1 → Total Dibayar Rp 15.000, 1 Bulan Lunas, 1 Struk Disetujui.
+
+**Polish UI Tambahan**
+- Empty states: konsisten brutalist style dengan icon box + shadow offset.
+- Confirm dialog: brutalist modal dengan variant color (danger=merah, primary=kuning, neutral=putih).
+- Profil stats: 3 card color-coded (hijau/kuning/netral) dengan icon + label uppercase + value tabular-nums.
+
+### Verifikasi End-to-End
+- ✅ Empty state: admin struk & audit log pakai EmptyState component
+- ✅ Confirm dialog: kas view delete transaksi pakai ConfirmDialog (bukan native confirm)
+- ✅ Profil stats: Total Dibayar Rp 15.000, 1 Bulan Lunas, 1 Struk Disetujui
+- ✅ Semua 18 halaman return 200
+- ✅ Lint bersih (0 error, 0 warning)
+
+---
 
 ## Checkpoint 9: Skeleton Loaders Expanded + Keyboard Shortcut "/" + Card Hover Polish
 
