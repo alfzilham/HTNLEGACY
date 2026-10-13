@@ -18,6 +18,7 @@ import {
   ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AdminGlobalSearch } from "@/components/admin-global-search";
 
 const NAV = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
@@ -106,6 +107,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
         </div>
+
+        {/* Global search (desktop only) */}
+        <AdminGlobalSearch />
 
         <div className="flex items-center gap-2">
           <Link

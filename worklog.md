@@ -1,6 +1,62 @@
 # SIDU — Worklog
 
-## Status: MVP LENGKAP + Enhancements (Cron Review #4 selesai)
+## Status: MVP LENGKAP + Enhancements (Cron Review #5 selesai)
+
+## Checkpoint 7: Global Search + Rate Limiting + Help Tooltips
+
+### Yang Selesai di Round Ini
+
+**Todo 29 — Global Search di Top Bar Admin (NEW)**
+- API `GET /api/admin/search?q=keyword` — search anggota (nama/no HP), struk (by nama anggota), transaksi (by keterangan). Return grouped results, max 10 per kategori.
+- Komponen `AdminGlobalSearch` (`src/components/admin-global-search.tsx`):
+  - Input di top bar admin (dark theme, white text on dark bg).
+  - Debounce 300ms, dropdown results dengan 3 section (Anggota/Struk/Transaksi).
+  - Each result: icon + label + status badge/nominal + click to navigate.
+  - Click outside to close, X button to clear, "Tutup pencarian" footer.
+  - Empty state: "Tidak ada hasil untuk '...'".
+- Integrasi di `AdminShell` top bar (desktop only, mobile pakai hamburger menu).
+- Verifikasi via agent-browser: search "Dewi" → dropdown show "Dewi Test" (ANGGOTA, LUNAS badge) + struk (Disetujui). Click → navigate ke /admin/anggota.
+
+**Todo 30 — Rate Limiting untuk Brute-Force Mitigation (NEW, RISK FIX)**
+- Helper `lib/rate-limit.ts` dengan sliding window strategy:
+  - `checkRateLimit(key, maxAttempts, windowSeconds, lockSeconds)` → return `{ok, remaining, retryAfterSeconds}`.
+  - `resetRateLimit(key)` — clear attempts setelah login sukses.
+  - `getClientIp(req)` — ekstrak IP dari X-Forwarded-For / X-Real-IP.
+  - In-memory store (reset saat server restart), cleanup idle entries setiap 5 menit.
+- Applied ke 3 endpoint kritis:
+  - `POST /api/auth/login` — 5 attempts/5 menit, lock 60s. Error: "Password salah. Sisa percobaan: X." → "Terlalu banyak percobaan login. Coba lagi dalam 60 detik." (429).
+  - `POST /api/auth/verify-password` — 5 attempts/5 menit per anggotaId+IP, lock 60s.
+  - `POST /api/admin/auth` — 5 attempts/5 menit, lock 60s.
+- Reset on success: login sukses → clear attempts (user tidak di-penalize untuk wrong attempts sebelum sukses).
+- Verifikasi via curl: 5 wrong logins → countdown "Sisa percobaan: 4,3,2,1,0" → 6th attempt: 429 locked 60s. Even correct password ditolak saat locked.
+- HTTP 429 + `Retry-After` header (standard).
+
+**Todo 31 — Help Tooltips (NEW)**
+- Komponen `HelpTooltip` (`src/components/help-tooltip.tsx`):
+  - Icon HelpCircle (lucide), hover/focus/click untuk show tooltip.
+  - Brutalist style: dark bg (var(--ink)), white text, 2.5px border, shadow offset accent-primary.
+  - Accessible: aria-describedby, keyboard focusable (tabindex via button), Esc to dismiss.
+  - Reusable: `<HelpTooltip text="..." />`.
+- Applied ke 3 field ambigu:
+  1. **Nominal Iuran** (admin settings): "Nominal iuran bulanan per anggota. Dipakai untuk transaksi otomatis (MASUK) saat struk di-approve admin. Bisa diubah kapan saja — perubahan berlaku untuk struk yang di-approve SETELAH perubahan."
+  2. **Tanggal Deadline** (admin settings): "Tanggal dalam bulan sebagai batas waktu pembayaran. Anggota yang BELUM_LUNAS setelah tanggal ini akan otomatis berstatus TERTUNGGAK (dihitung on-the-fly, bukan field permanen). Maks 28 untuk hindari Februari."
+  3. **Password re-entry** (upload struk modal): "By design: siapa pun bisa upload struk atas nama anggota lain, asal tahu password orang tsb. Ini fitur, bukan bug — memudahkan anggota saling bantu upload struk pembayaran."
+- Verifikasi via agent-browser: hover tooltip → dark tooltip muncul dengan help text lengkap.
+
+**Polish UI Tambahan**
+- Global search: dark theme input (white/10 bg, white/30 border) match admin top bar.
+- Tooltips: brutalist dark style with accent-primary shadow offset.
+- Rate limit errors: clear Indonesian messages with countdown + retry-after.
+
+### Verifikasi End-to-End
+- ✅ Global search: search "Dewi" → dropdown with Anggota + Struk results, click → navigate
+- ✅ Rate limit: 5 wrong logins → countdown → 6th: 429 locked 60s; correct password during lock: rejected
+- ✅ Help tooltips: hover nominal/deadline/password → tooltip muncul dengan help text
+- ✅ Semua 18 halaman return 200
+- ✅ Lint bersih (0 error, 0 warning)
+- ✅ Login normal (correct password) tetap bekerja setelah lock expired
+
+---
 
 ## Checkpoint 6: Full Sonner Toast Integration + Esc-to-close All Modals + Anggota Detail Modal
 
@@ -301,8 +357,7 @@
 - **SQLite untuk MVP**: kalau scale > 100 anggota dengan banyak struk, perlu migrate ke PostgreSQL. Schema sudah compatible (tinggal ganti provider + enum native).
 - **WAHA stub**: notifikasi WA belum benar-benar terkirim. Production perlu setup WAHA instance + ganti isi `sendWahaMessage()`.
 - **OCR dependency**: hanya Gemini AI. Kalau Gemini API down/rate-limited, struk auto-REJECTED. Hook Python OCR tersedia tapi belum diimplementasi.
-- **Password reversible encryption**: trade-off keamanan disadari (DB + key bocor = password terbuka). Mitigasi: edukasi user pakai password unik.
+- **Password reversible encryption**: trade-off keamanan disadari (DB + key bocor = password terbuka). Mitigasi: edukasi user pakai password unik. Rate limiting sekarang aktif untuk mitigasi brute-force.
 - **Storage struk local filesystem**: tidak ada backup otomatis. Reset siklus hapus permanen. Production perlu Supabase Storage atau S3.
-- **No rate limiting**: endpoint login/verify-password tidak ada rate limit. Rentan brute-force (ARCHITECTURE.md §4.4 bilang "disarankan" tapi belum implementasi).
-- **Sonner toast belum full integration**: baru di admin anggota. Perlu apply ke upload struk, struk verify, import, settings, laporan.
-- **Esc-to-close baru di upload modal**: perlu apply ke modal lain (preview struk, edit status, delete confirm, reject, import warning, reset confirm).
+- **Rate limiting in-memory**: reset saat server restart. Untuk production multi-instance, perlu Redis atau Upstash rate limit.
+- **Skeleton loaders belum dipakai**: komponen sudah dibuat (src/components/skeleton.tsx) tapi belum di-applied ke loading states halaman. Next phase: apply ke dashboard, struk list, kas view.

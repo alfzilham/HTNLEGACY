@@ -8,9 +8,23 @@ import { db } from "@/lib/db";
 import { isValidGender } from "@/lib/constants";
 import { verifyPassword } from "@/lib/crypto";
 import { setAnggotaSession } from "@/lib/session";
+import { checkRateLimit, resetRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit (5 attempts / 5 menit, lock 60s)
+    const ip = getClientIp(req);
+    const rl = checkRateLimit(`login:${ip}`, 5, 300, 60);
+    if (!rl.ok) {
+      return NextResponse.json(
+        {
+          error: `Terlalu banyak percobaan login. Coba lagi dalam ${rl.retryAfterSeconds} detik.`,
+          retryAfter: rl.retryAfterSeconds,
+        },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfterSeconds ?? 60) } }
+      );
+    }
+
     const body = await req.json();
     const { gender, namaLengkap, password } = body as {
       gender?: string;
@@ -46,11 +60,13 @@ export async function POST(req: NextRequest) {
 
     if (!verifyPassword(password, anggota.passwordEnc)) {
       return NextResponse.json(
-        { error: "Password salah." },
+        { error: `Password salah. Sisa percobaan: ${rl.remaining}.` },
         { status: 401 }
       );
     }
 
+    // Login sukses — reset rate limit
+    resetRateLimit(`login:${ip}`);
     await setAnggotaSession(anggota.id);
     return NextResponse.json({ ok: true, anggotaId: anggota.id });
   } catch (e) {

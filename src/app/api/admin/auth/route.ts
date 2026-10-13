@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { setAdminSession } from "@/lib/session";
+import { checkRateLimit, resetRateLimit, getClientIp } from "@/lib/rate-limit";
 import { timingSafeEqual } from "crypto";
 
 function safeCompare(a: string, b: string): boolean {
@@ -19,6 +20,19 @@ function safeCompare(a: string, b: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit (5 attempts / 5 menit, lock 60s)
+    const ip = getClientIp(req);
+    const rl = checkRateLimit(`admin:${ip}`, 5, 300, 60);
+    if (!rl.ok) {
+      return NextResponse.json(
+        {
+          error: `Terlalu banyak percobaan. Coba lagi dalam ${rl.retryAfterSeconds} detik.`,
+          retryAfter: rl.retryAfterSeconds,
+        },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfterSeconds ?? 60) } }
+      );
+    }
+
     const body = await req.json();
     const { password } = body as { password?: string };
     const adminPwd = process.env.ADMIN_PASSWORD;
@@ -31,11 +45,13 @@ export async function POST(req: NextRequest) {
     }
     if (!password || !safeCompare(String(password), adminPwd)) {
       return NextResponse.json(
-        { error: "Password admin salah." },
+        { error: `Password admin salah. Sisa percobaan: ${rl.remaining}.` },
         { status: 401 }
       );
     }
 
+    // Login sukses — reset rate limit
+    resetRateLimit(`admin:${ip}`);
     await setAdminSession();
     return NextResponse.json({ ok: true });
   } catch (e) {

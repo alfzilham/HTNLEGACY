@@ -16,6 +16,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast as sonnerToast } from "@/components/ui/sonner";
+import { HelpTooltip } from "@/components/help-tooltip";
 
 type Settings = {
   id: string;
@@ -194,8 +195,9 @@ export default function AdminSettingsPage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="nominal" className="block text-sm font-bold mb-2">
+              <label htmlFor="nominal" className="block text-sm font-bold mb-2 flex items-center gap-1">
                 Nominal Iuran (Rp)
+                <HelpTooltip text="Nominal iuran bulanan per anggota. Dipakai untuk transaksi otomatis (MASUK) saat struk di-approve admin. Bisa diubah kapan saja — perubahan berlaku untuk struk yang di-approve SETELAH perubahan." />
               </label>
               <input
                 id="nominal"
@@ -220,6 +222,7 @@ export default function AdminSettingsPage() {
               >
                 <CalendarClock size={14} strokeWidth={2.5} />
                 Tanggal Deadline (1-28)
+                <HelpTooltip text="Tanggal dalam bulan sebagai batas waktu pembayaran. Anggota yang BELUM_LUNAS setelah tanggal ini akan otomatis berstatus TERTUNGGAK (dihitung on-the-fly, bukan field permanen). Maks 28 untuk hindari Februari." />
               </label>
               <input
                 id="deadline"

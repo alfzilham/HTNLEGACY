@@ -5,6 +5,7 @@ import { Loader2, X, KeyRound, Upload, AlertCircle, CheckCircle2 } from "lucide-
 import { StatusBadge } from "./status-badge";
 import { useEscapeToClose } from "@/hooks/use-escape-to-close";
 import { toast as sonnerToast } from "@/components/ui/sonner";
+import { HelpTooltip } from "@/components/help-tooltip";
 
 type AnggotaItem = {
   id: string;
@@ -134,9 +135,12 @@ export function UploadStrukModal({
         {/* Step: password */}
         {step === "password" && (
           <div>
-            <p className="text-sm font-semibold text-[#6b6b6b] mb-3">
-              Masukkan password milik <b>{anggota.namaLengkap}</b> untuk verifikasi.
-              Re-entry wajib per aksi — bahkan jika Anda sudah login sebagai anggota lain.
+            <p className="text-sm font-semibold text-[#6b6b6b] mb-3 flex items-start gap-1.5">
+              <span>
+                Masukkan password milik <b>{anggota.namaLengkap}</b> untuk verifikasi.
+                Re-entry wajib per aksi — bahkan jika Anda sudah login sebagai anggota lain.
+              </span>
+              <HelpTooltip text="By design: siapa pun bisa upload struk atas nama anggota lain, asal tahu password orang tsb. Ini fitur, bukan bug — memudahkan anggota saling bantu upload struk pembayaran." />
             </p>
             <div className="relative mb-3">
               <KeyRound
