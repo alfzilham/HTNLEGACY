@@ -1,8 +1,14 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ============================================================
+// SIDU — Prisma Schema (SQLite untuk MVP)
+// ------------------------------------------------------------
+// Catatan migrasi-sensitif (ke PostgreSQL production nanti):
+// - SQLite tidak mendukung native enum type. Field enum di bawah
+//   disimpan sebagai String dengan konstanta di app layer
+//   (lihat src/lib/constants.ts). Saat pindah ke Postgres, ganti
+//   ke `enum` native Prisma — logic downstream tidak berubah.
+// - `@@unique([namaLengkap, gender])` dipertahankan.
+// - Model `AdminSession` tidak dipakai (JWT stateless) — dihapus.
+// ============================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +19,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Anggota {
+  id          String   @id @default(cuid())
+  gender      String   // "PRIA" | "WANITA" — validasi di app layer
+  namaLengkap String
+  noHpWa      String
+  passwordEnc String   // AES-256-GCM encrypted, BUKAN hash (lihat ARCHITECTURE.md §4.1)
+  status      String   @default("BELUM_LUNAS") // "BELUM_LUNAS" | "LUNAS" — TERTUNGGAK = derived on-the-fly
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  struk Struk[]
+
+  @@unique([namaLengkap, gender])
+  @@index([gender])
+  @@index([status])
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Struk {
+  id            String    @id @default(cuid())
+  anggotaId     String
+  anggota       Anggota   @relation(fields: [anggotaId], references: [id], onDelete: Cascade)
+  imageUrl      String    // path local: /uploads/struk/{YYYY-MM}/{anggotaId}-{ts}.ext
+  statusStruk   String    @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  ocrRawText    String?   // hasil OCR mentah (JSON string terstruktur)
+  ocrSource     String?   // "gemini" | "python-ocr" (hook masa depan)
+  ditolakAlasan String?
+  periodeBulan  String    // "YYYY-MM" — untuk grouping & reset siklus
+  createdAt     DateTime  @default(now())
+  verifiedAt    DateTime?
+
+  @@index([statusStruk])
+  @@index([periodeBulan])
+  @@index([anggotaId])
+}
+
+model Transaksi {
+  id           String   @id @default(cuid())
+  tipe         String   // "MASUK" | "KELUAR"
+  nominal      Int
+  keterangan   String
+  strukId      String?  // relasi opsional jika transaksi berasal dari struk approved
+  anggotaId    String?  // anggota terkait (jika MASUK dari struk / keterkaitan tertentu)
+  periodeBulan String   // "YYYY-MM" — TIDAK PERNAH ikut reset (lihat SPEC §8.3)
+  createdAt    DateTime @default(now())
+
+  @@index([periodeBulan])
+  @@index([tipe])
+  @@index([strukId])
+}
+
+model Settings {
+  id               String @id @default("singleton")
+  nominalIuran     Int    @default(15000)
+  deadlineTanggal  Int    @default(10) // tanggal dalam bulan sebagai acuan "tertunggak"
+  namaBank         String?
+  nomorRekening    String?
+  barcodeImageUrl  String?  // diupload manual admin (BUKAN generate dinamis — PRD Won't Have)
+  kontakBendahara  String?
+  kontakSekretaris String?
+  kontakKompting   String?
+  updatedAt        DateTime @updatedAt
 }
