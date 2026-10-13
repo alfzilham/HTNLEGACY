@@ -22,6 +22,7 @@ import { isAdmin } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getPeriodeBulan } from "@/lib/status";
 import { sendWahaMessage, buildStrukDitolakMessage } from "@/lib/waha";
+import { auditLog } from "@/lib/audit";
 
 export async function POST(
   req: NextRequest,
@@ -82,6 +83,12 @@ export async function POST(
         }),
       ]);
 
+      await auditLog("APPROVE_STRUK", {
+        targetId: id,
+        targetLabel: struk.anggota.namaLengkap,
+        detail: `Nominal: Rp ${settings.nominalIuran.toLocaleString("id-ID")}`,
+      });
+
       return NextResponse.json({
         ok: true,
         action: "approve",
@@ -113,6 +120,12 @@ export async function POST(
         data: { status: "BELUM_LUNAS" },
       }),
     ]);
+
+    await auditLog("REJECT_STRUK", {
+      targetId: id,
+      targetLabel: struk.anggota.namaLengkap,
+      detail: alasanText,
+    });
 
     // WAHA stub — best-effort, try/catch TERPISAH dari logika utama
     try {

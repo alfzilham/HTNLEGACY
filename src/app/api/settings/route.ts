@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { isAdmin } from "@/lib/auth";
+import { auditLog } from "@/lib/audit";
 
 export async function GET() {
   const s = await getSettings();
@@ -53,6 +54,10 @@ export async function PATCH(req: NextRequest) {
       where: { id: "singleton" },
       update: data,
       create: { id: "singleton", ...data },
+    });
+    await auditLog("UPDATE_SETTINGS", {
+      targetLabel: "singleton",
+      detail: Object.keys(data).join(", "),
     });
     return NextResponse.json(updated);
   } catch (e) {

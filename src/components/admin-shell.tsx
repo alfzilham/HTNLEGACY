@@ -14,14 +14,18 @@ import {
   X,
   LogOut,
   ArrowLeft,
+  Users,
+  ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Data Anggota", href: "/admin/anggota", icon: Users },
   { label: "Verifikasi Struk", href: "/admin/struk", icon: ImageIcon },
   { label: "Kas & Transaksi", href: "/admin/kas", icon: Wallet },
   { label: "Import Data", href: "/admin/import", icon: Upload },
+  { label: "Audit Log", href: "/admin/audit-log", icon: ScrollText },
   { label: "Pengaturan", href: "/admin/settings", icon: SettingsIcon },
   { label: "Laporan & Reset", href: "/admin/laporan", icon: FileArchive },
 ];

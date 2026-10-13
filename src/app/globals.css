@@ -319,3 +319,110 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* ============================================================
+   Custom Checkbox (DESIGN §9.3)
+   ============================================================ */
+.brutal-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid var(--ink);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--surface);
+  transition:
+    background-color 150ms ease-out,
+    transform 100ms ease-out;
+  flex-shrink: 0;
+}
+.brutal-checkbox:checked {
+  background: var(--accent-primary);
+}
+.brutal-checkbox:active {
+  transform: scale(0.92);
+}
+.brutal-checkbox:focus-visible {
+  outline: 3px solid var(--accent-tertiary);
+  outline-offset: 2px;
+}
+.brutal-checkbox:checked::after {
+  content: "";
+  width: 6px;
+  height: 11px;
+  border: solid var(--ink);
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* ============================================================
+   Custom Select (DESIGN §9.2)
+   ============================================================ */
+.brutal-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+  padding: 10px 36px 10px 14px;
+  background: var(--surface);
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23111111' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  transition: box-shadow 0.15s ease-out;
+}
+.brutal-select:focus {
+  outline: none;
+  box-shadow: 3px 3px 0px var(--accent-primary);
+}
+.brutal-select:focus-visible {
+  outline: 3px solid var(--accent-tertiary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Focus-visible global (DESIGN §10)
+   ============================================================ */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--accent-tertiary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   Animations: fade-in untuk modal
+   ============================================================ */
+@keyframes brutal-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.brutal-animate-in {
+  animation: brutal-fade-in 200ms ease-out;
+}
+
+/* ============================================================
+   Hover lift effect untuk card clickable
+   ============================================================ */
+.brutal-hover-lift {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.brutal-hover-lift:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px var(--ink);
+}

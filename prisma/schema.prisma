@@ -81,3 +81,19 @@ model Settings {
   kontakKompting   String?
   updatedAt        DateTime @updatedAt
 }
+
+// Audit log sederhana untuk aksi admin (PRD §5 Should Have)
+// Catat: siapa (admin = "shared"), aksi apa, target siapa, kapan.
+// Tidak ada akun admin individual di MVP, jadi actor selalu "admin".
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     String   // selalu "admin" di MVP (single shared password)
+  aksi      String   // "APPROVE_STRUK" | "REJECT_STRUK" | "UPDATE_STATUS" | "DELETE_ANGGOTA" | "ADD_ANGGOTA" | "IMPORT_ANGGOTA" | "UPDATE_SETTINGS" | "ADD_TRANSAKSI" | "DELETE_TRANSAKSI" | "RESET_SIKLUS" | "GENERATE_LAPORAN"
+  targetId  String?  // ID entitas yang dipengaruhi (anggotaId, strukId, dsb)
+  targetLabel String? // label manusiawi (mis: nama anggota)
+  detail    String?  // keterangan tambahan (mis: alasan reject, nominal transaksi)
+  createdAt DateTime @default(now())
+
+  @@index([aksi])
+  @@index([createdAt])
+}

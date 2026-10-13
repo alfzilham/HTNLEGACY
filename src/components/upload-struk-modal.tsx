@@ -94,7 +94,7 @@ export function UploadStrukModal({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative brutal-card w-full max-w-md p-6">
+      <div className="relative brutal-card brutal-animate-in w-full max-w-md p-6">
         <button
           type="button"
           onClick={onClose}
