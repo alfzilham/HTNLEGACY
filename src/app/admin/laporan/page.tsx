@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { toast as sonnerToast } from "@/components/ui/sonner";
+import { Skeleton } from "@/components/skeleton";
 
 type Info = {
   periode: string;
@@ -137,8 +138,28 @@ export default function AdminLaporanPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin" size={32} />
+      <div className="flex flex-col gap-6">
+        <div>
+          <Skeleton className="h-7 w-56 mb-2" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+        <div className="brutal-card p-5">
+          <Skeleton className="h-5 w-48 mb-4" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i}>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="brutal-card p-6">
+          <Skeleton className="h-6 w-40 mb-3" />
+          <Skeleton className="h-3 w-full mb-2" />
+          <Skeleton className="h-3 w-2/3 mb-4" />
+          <Skeleton className="h-10 w-40" />
+        </div>
       </div>
     );
   }

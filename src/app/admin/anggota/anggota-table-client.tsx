@@ -29,6 +29,7 @@ import { Pagination } from "@/components/pagination";
 import { StrukImage } from "@/components/struk-image";
 import { toast as sonnerToast } from "@/components/ui/sonner";
 import { useEscapeToClose } from "@/hooks/use-escape-to-close";
+import { PasswordStrength } from "@/components/password-strength";
 
 type AnggotaItem = {
   id: string;
@@ -905,6 +906,7 @@ function AddAnggotaModal({
               required
               minLength={6}
             />
+            <PasswordStrength password={password} />
             <p className="text-xs text-[#6b6b6b] font-semibold mt-1">
               Password dapat dilihat kembali oleh admin via icon mata.
             </p>

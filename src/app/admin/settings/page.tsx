@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast as sonnerToast } from "@/components/ui/sonner";
 import { HelpTooltip } from "@/components/help-tooltip";
+import { Skeleton } from "@/components/skeleton";
 
 type Settings = {
   id: string;
@@ -117,8 +118,37 @@ export default function AdminSettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin" size={32} />
+      <div className="flex flex-col gap-6">
+        <div>
+          <Skeleton className="h-7 w-48 mb-2" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+        <div className="brutal-card p-5">
+          <Skeleton className="h-5 w-40 mb-4" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+        </div>
+        <div className="brutal-card p-5">
+          <Skeleton className="h-5 w-40 mb-4" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-4 w-28 mb-2" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

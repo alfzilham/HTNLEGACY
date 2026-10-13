@@ -58,11 +58,62 @@ export function StrukListClient({
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectAlasan, setRejectAlasan] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   const pending = strukList.filter((s) => s.statusStruk === "PENDING");
   const decided = strukList.filter((s) => s.statusStruk !== "PENDING");
   const previewStruk = strukList.find((s) => s.id === previewId);
   const rejectStruk = strukList.find((s) => s.id === rejectId);
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selected.size === pending.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(pending.map((s) => s.id)));
+    }
+  }
+
+  async function handleBulkApprove() {
+    if (selected.size === 0) return;
+    setBulkLoading(true);
+    let success = 0;
+    let failed = 0;
+    for (const id of selected) {
+      try {
+        const res = await fetch(`/api/struk/${id}/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "approve" }),
+        });
+        if (res.ok) success++;
+        else failed++;
+      } catch {
+        failed++;
+      }
+    }
+    setBulkLoading(false);
+    setSelected(new Set());
+    if (success > 0) {
+      sonnerToast.success(`${success} struk disetujui`, {
+        description: failed > 0 ? `${failed} gagal` : undefined,
+      });
+    }
+    if (failed > 0 && success === 0) {
+      sonnerToast.error(`Gagal approve ${failed} struk`);
+    }
+    router.refresh();
+  }
 
   // Esc to close modals (hanya saat tidak loading)
   useEscapeToClose(() => setPreviewId(null), !actionLoading);
@@ -268,20 +319,47 @@ export function StrukListClient({
 
       {/* Pending section */}
       <section>
-        <h2 className="font-extrabold text-lg mb-3 flex items-center gap-2">
-          <Clock size={18} strokeWidth={2.5} />
-          Menunggu Verifikasi
-          <span
-            className="ml-1 px-2 py-0.5 text-xs font-bold"
-            style={{
-              background: "var(--status-pending)",
-              border: "2px solid var(--ink)",
-              borderRadius: 999,
-            }}
-          >
-            {pending.length}
-          </span>
-        </h2>
+        <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+          <h2 className="font-extrabold text-lg flex items-center gap-2">
+            <Clock size={18} strokeWidth={2.5} />
+            Menunggu Verifikasi
+            <span
+              className="ml-1 px-2 py-0.5 text-xs font-bold"
+              style={{
+                background: "var(--status-pending)",
+                border: "2px solid var(--ink)",
+                borderRadius: 999,
+              }}
+            >
+              {pending.length}
+            </span>
+          </h2>
+          {pending.length > 0 && (
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 text-xs font-bold cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selected.size === pending.length && pending.length > 0}
+                  onChange={toggleSelectAll}
+                  className="brutal-checkbox"
+                />
+                <span>Pilih Semua ({selected.size}/{pending.length})</span>
+              </label>
+              {selected.size > 0 && (
+                <button
+                  type="button"
+                  onClick={handleBulkApprove}
+                  disabled={bulkLoading}
+                  className="brutal-btn px-3 py-1.5 text-xs"
+                  style={{ background: "var(--status-lunas)", color: "#14532d" }}
+                >
+                  {bulkLoading ? <Loader2 size={12} strokeWidth={2.5} className="animate-spin" /> : <CheckCircle2 size={12} strokeWidth={2.5} />}
+                  <span>Bulk Approve ({selected.size})</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
         {pending.length === 0 ? (
           <div className="brutal-card-flat p-6 text-center text-[#6b6b6b] font-semibold text-sm">
             Tidak ada struk pending.
@@ -289,7 +367,18 @@ export function StrukListClient({
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {pending.map((s) => (
-              <StrukCard key={s.id} s={s} />
+              <div key={s.id} className="relative">
+                <input
+                  type="checkbox"
+                  checked={selected.has(s.id)}
+                  onChange={() => toggleSelect(s.id)}
+                  className="brutal-checkbox absolute top-3 left-3 z-10"
+                  aria-label={`Pilih struk ${s.anggota.namaLengkap}`}
+                />
+                <div className="pl-8">
+                  <StrukCard s={s} />
+                </div>
+              </div>
             ))}
           </div>
         )}

@@ -13,6 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { AuthShell } from "@/components/auth-shell";
+import { PasswordStrength } from "@/components/password-strength";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -199,6 +200,7 @@ export default function SignupPage() {
                 minLength={6}
               />
             </div>
+            <PasswordStrength password={password} />
             <p className="text-xs text-[#6b6b6b] font-semibold mt-1">
               Gunakan password unik — jangan samakan dengan password akun penting lain.
             </p>

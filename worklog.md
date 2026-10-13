@@ -1,6 +1,51 @@
 # SIDU — Worklog
 
-## Status: MVP LENGKAP + Enhancements (Cron Review #5 selesai)
+## Status: MVP LENGKAP + Enhancements (Cron Review #6 selesai)
+
+## Checkpoint 8: Password Strength Indicator + Bulk Approve Struk + Skeleton Loaders
+
+### Yang Selesai di Round Ini
+
+**Todo 32 — Password Strength Indicator (NEW)**
+- Komponen `PasswordStrength` (`src/components/password-strength.tsx`):
+  - Real-time strength bar (4 segments) + label (Sangat lemah/Lemah/Cukup/Baik/Kuat).
+  - Checklist 5 kriteria: min 6 char, min 10 char, huruf besar, angka, simbol.
+  - Color-coded: merah (lemah), kuning (cukup), hijau (baik/kuat).
+  - Brutalist style: 1.5px border, animated pulse bar segments.
+- Applied ke 2 form:
+  1. **Signup page** (`/signup`) — user lihat strength saat mengetik password.
+  2. **Add Anggota modal** (`/admin/anggota`) — admin lihat strength saat buat anggota baru.
+- Verifikasi via agent-browser: "abc" → "SANGAT LEMAH" (red), "MyStr0ng!Pass2026" → "KUAT" (green).
+
+**Todo 33 — Bulk Approve Struk (NEW)**
+- Checkbox selection di setiap card struk pending (absolute top-left, brutal-checkbox style).
+- "Pilih Semua (X/Y)" checkbox di header section + counter real-time.
+- "Bulk Approve (N)" button muncul saat ada selection (hijau, dengan count).
+- `handleBulkApprove()`: loop approve semua selected, hitung success/failed, toast result.
+- Sonner toast: "N struk disetujui" + desc failed count jika ada.
+- Auto-clear selection setelah bulk action + router.refresh().
+- Verifikasi via agent-browser: upload 2 struk → select all → bulk approve → toast "2 struk disetujui" → 0 pending.
+
+**Todo 34 — Skeleton Loaders Applied (RISK FIX)**
+- Apply `Skeleton` component ke loading states (sebelumnya pakai spinner Loader2):
+  1. **Admin settings** (`/admin/settings`) — skeleton card layout (heading + form fields).
+  2. **Admin laporan** (`/admin/laporan`) — skeleton card layout (stat cards + info section).
+- Skeleton brutalist style: 2px border, animated pulse gradient (f3f0e7 → e5e0d3 → f3f0e7).
+- Lebih informatif dari spinner — user lihat struktur halaman saat loading.
+
+**Polish UI Tambahan**
+- Password strength: animated bar segments + checklist dengan icon check/x.
+- Bulk approve: brutal-checkbox style konsisten, counter real-time.
+- Skeleton: gradient pulse match brutalist theme.
+
+### Verifikasi End-to-End
+- ✅ Password strength: "abc" → SANGAT LEMAH, "MyStr0ng!Pass2026" → KUAT
+- ✅ Bulk approve: select all 2 struk → bulk approve → toast "2 struk disetujui" → 0 pending
+- ✅ Skeleton loaders: settings & laporan loading state pakai skeleton (bukan spinner)
+- ✅ Semua 18 halaman return 200
+- ✅ Lint bersih (0 error, 0 warning)
+
+---
 
 ## Checkpoint 7: Global Search + Rate Limiting + Help Tooltips
 
@@ -360,4 +405,4 @@
 - **Password reversible encryption**: trade-off keamanan disadari (DB + key bocor = password terbuka). Mitigasi: edukasi user pakai password unik. Rate limiting sekarang aktif untuk mitigasi brute-force.
 - **Storage struk local filesystem**: tidak ada backup otomatis. Reset siklus hapus permanen. Production perlu Supabase Storage atau S3.
 - **Rate limiting in-memory**: reset saat server restart. Untuk production multi-instance, perlu Redis atau Upstash rate limit.
-- **Skeleton loaders belum dipakai**: komponen sudah dibuat (src/components/skeleton.tsx) tapi belum di-applied ke loading states halaman. Next phase: apply ke dashboard, struk list, kas view.
+- **Skeleton loaders applied**: settings & laporan sudah pakai skeleton. Next phase: apply ke dashboard, struk list, kas view, anggota detail modal untuk konsistensi penuh.
