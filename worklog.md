@@ -1,6 +1,44 @@
 # SIDU — Worklog
 
-## Status: MVP LENGKAP + Enhancements (Cron Review #6 selesai)
+## Status: MVP LENGKAP + Enhancements (Cron Review #7 selesai)
+
+## Checkpoint 9: Skeleton Loaders Expanded + Keyboard Shortcut "/" + Card Hover Polish
+
+### Yang Selesai di Round Ini
+
+**Todo 35 — Skeleton Loaders ke Anggota Detail Modal (RISK FIX)**
+- Replace spinner Loader2 dengan skeleton list di anggota detail modal (`/admin/anggota` → click "Detail").
+- Skeleton menampilkan 3 placeholder card (thumbnail 16x16 + text lines) saat loading data struk historis.
+- Brutalist style konsisten dengan skeleton di settings & laporan (2px border, animated pulse gradient).
+- Lebih informatif dari spinner — user lihat struktur list struk saat loading.
+
+**Todo 36 — Keyboard Shortcut "/" untuk Focus Global Search (NEW)**
+- Press "/" di mana saja di admin panel → auto-focus ke global search input.
+- Skip jika user sudah typing di input/textarea (tidak intercept).
+- Placeholder update: "Cari anggota, struk, transaksi... (tekan /)" — discoverable.
+- aria-label update: "Pencarian global admin (tekan / untuk fokus)" — accessible.
+- Pattern umum (GitHub, Gmail, dll) — power users bisa search cepat tanpa mouse.
+- Verifikasi via agent-browser: press "/" → input focused → type "Dewi" → results muncul.
+
+**Todo 37 — Card Hover Polish (brutal-hover-lift)**
+- Apply `brutal-hover-lift` class ke anggota cards di beranda & daftar filter (sebelumnya pakai inline hover:translate).
+- Konsistensi: semua clickable cards sekarang pakai class yang sama (translate -2px + shadow 8px 8px).
+- Includes: dashboard quick links, anggota list cards, dll.
+- Transisi smooth 150ms ease-out.
+
+**Polish UI Tambahan**
+- Anggota detail modal: skeleton list placeholder saat loading (3 cards).
+- Global search: placeholder hint "(tekan /)" untuk discoverability.
+- Card hover: consistent brutal-hover-lift across all clickable cards.
+
+### Verifikasi End-to-End
+- ✅ Anggota detail modal: skeleton list show saat loading (3 placeholder cards)
+- ✅ Keyboard shortcut "/": press → focus search → type → results
+- ✅ Card hover: brutal-hover-lift applied ke anggota cards
+- ✅ Semua 18 halaman return 200
+- ✅ Lint bersih (0 error, 0 warning)
+
+---
 
 ## Checkpoint 8: Password Strength Indicator + Bulk Approve Struk + Skeleton Loaders
 
@@ -405,4 +443,4 @@
 - **Password reversible encryption**: trade-off keamanan disadari (DB + key bocor = password terbuka). Mitigasi: edukasi user pakai password unik. Rate limiting sekarang aktif untuk mitigasi brute-force.
 - **Storage struk local filesystem**: tidak ada backup otomatis. Reset siklus hapus permanen. Production perlu Supabase Storage atau S3.
 - **Rate limiting in-memory**: reset saat server restart. Untuk production multi-instance, perlu Redis atau Upstash rate limit.
-- **Skeleton loaders applied**: settings & laporan sudah pakai skeleton. Next phase: apply ke dashboard, struk list, kas view, anggota detail modal untuk konsistensi penuh.
+- **Skeleton loaders expanded**: settings, laporan, anggota detail modal sudah pakai skeleton. Server components (dashboard, struk list, kas view) tidak perlu skeleton karena SSR langsung render data.

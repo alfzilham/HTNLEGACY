@@ -96,7 +96,7 @@ export function AnggotaListClient({
             key={a.id}
             type="button"
             onClick={() => setSelected(a)}
-            className="brutal-card-flat p-4 text-left hover:translate-x-[-2px] hover:translate-y-[-2px] transition-transform"
+            className="brutal-card-flat brutal-hover-lift p-4 text-left"
             style={{ background: "var(--surface)" }}
           >
             <div className="flex items-center justify-between gap-2">

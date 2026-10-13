@@ -47,6 +47,19 @@ export function AdminGlobalSearch() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut: "/" to focus search (unless already typing in input/textarea)
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
 
   // Debounce search
   useEffect(() => {
@@ -120,13 +133,14 @@ export function AdminGlobalSearch() {
           aria-hidden="true"
         />
         <input
+          ref={inputRef}
           type="text"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => results && setOpen(true)}
-          placeholder="Cari anggota, struk, transaksi..."
+          placeholder="Cari anggota, struk, transaksi... (tekan /)"
           className="w-full pl-9 pr-8 py-2 text-sm font-semibold bg-white/10 text-white placeholder:text-white/50 rounded-md border-2 border-white/30 focus:bg-white/20 focus:border-white/60 focus:outline-none transition-colors"
-          aria-label="Pencarian global admin"
+          aria-label="Pencarian global admin (tekan / untuk fokus)"
         />
         {loading && (
           <Loader2

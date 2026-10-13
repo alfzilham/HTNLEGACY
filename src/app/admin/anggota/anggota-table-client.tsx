@@ -30,6 +30,7 @@ import { StrukImage } from "@/components/struk-image";
 import { toast as sonnerToast } from "@/components/ui/sonner";
 import { useEscapeToClose } from "@/hooks/use-escape-to-close";
 import { PasswordStrength } from "@/components/password-strength";
+import { Skeleton } from "@/components/skeleton";
 
 type AnggotaItem = {
   id: string;
@@ -691,8 +692,21 @@ export function AnggotaTableClient({
             </div>
 
             {detailLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 size={28} strokeWidth={2.5} className="animate-spin" />
+              <div className="flex flex-col gap-3">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 p-3"
+                    style={{ background: "var(--bg-base)", border: "2px solid var(--ink)", borderRadius: 8 }}
+                  >
+                    <Skeleton className="shrink-0 w-16 h-16" />
+                    <div className="flex-1">
+                      <Skeleton className="h-3 w-32 mb-2" />
+                      <Skeleton className="h-2.5 w-48 mb-1.5" />
+                      <Skeleton className="h-2.5 w-24" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : detailData ? (
               <div className="flex flex-col gap-3">
