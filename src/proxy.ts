@@ -16,7 +16,6 @@ import { readAdminFromCookies, readAnggotaFromCookies } from "@/lib/session-edge
 const PUBLIC_PATHS = [
   "/login",
   "/signup",
-  "/barcode",
   "/api/auth/signup",
   "/api/auth/login",
   "/api/auth/verify-password",
@@ -52,7 +51,7 @@ export function proxy(req: NextRequest) {
   }
 
   // 2. Rute anggota
-  const ANGGOTA_PROTECTED = ["/beranda", "/daftar", "/kas"];
+  const ANGGOTA_PROTECTED = ["/beranda", "/daftar", "/kas", "/barcode"];
   const isAnggotaProtected = ANGGOTA_PROTECTED.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );
@@ -74,7 +73,12 @@ export function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  return NextResponse.next();
+  // 4. Set x-pathname request header untuk dipakai server components (admin layout)
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 }
 
 export const config = {

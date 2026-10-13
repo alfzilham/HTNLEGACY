@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Shield, KeyRound, ArrowRight, Loader2 } from "lucide-react";
 import { AuthShell } from "@/components/auth-shell";
@@ -10,6 +10,24 @@ export default function AdminGatePage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
+
+  // Cek apakah sudah login admin → langsung redirect ke dashboard
+  useEffect(() => {
+    (async () => {
+      try {
+        // Pakai endpoint yang butuh admin; jika 200 berarti sudah login
+        const res = await fetch("/api/admin/check", { method: "GET" });
+        if (res.ok) {
+          router.replace("/admin/dashboard");
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      setChecking(false);
+    })();
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,6 +51,16 @@ export default function AdminGatePage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checking) {
+    return (
+      <AuthShell>
+        <div className="brutal-card p-8 flex items-center justify-center">
+          <Loader2 className="animate-spin" size={28} />
+        </div>
+      </AuthShell>
+    );
   }
 
   return (
