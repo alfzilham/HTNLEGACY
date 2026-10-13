@@ -25,6 +25,7 @@ import {
   Trash2,
   Loader2,
   ArrowRight,
+  Download,
 } from "lucide-react";
 import { formatRupiah } from "@/lib/status";
 
@@ -124,6 +125,29 @@ export function KasView({
     }
   }
 
+  function exportCsv(currentBulan: string, list: Transaksi[]) {
+    if (list.length === 0) return;
+    const header = ["Tanggal", "Tipe", "Nominal", "Keterangan", "Periode", "Dari Struk"];
+    const rows = list.map((t) => [
+      new Date(t.createdAt).toLocaleString("id-ID"),
+      t.tipe,
+      String(t.nominal),
+      `"${(t.keterangan ?? "").replace(/"/g, '""')}"`,
+      t.periodeBulan,
+      t.strukId ? "Ya" : "Tidak",
+    ]);
+    const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `transaksi-${currentBulan}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   // Chart data: 6 bulan terakhir + bulan saat ini
   const chartData = data.perBulan.slice(-6).map((b) => ({
     bulan: b.bulan,
@@ -201,24 +225,36 @@ export function KasView({
         </div>
       </div>
 
-      {/* Bulan selector */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm font-bold">Periode:</span>
-        {data.perBulan.slice(-6).reverse().map((b) => (
-          <button
-            key={b.bulan}
-            type="button"
-            onClick={() => loadBulan(b.bulan)}
-            className="brutal-btn px-3 py-1.5 text-xs"
-            style={{
-              background: bulan === b.bulan ? "var(--accent-primary)" : "var(--surface)",
-            }}
-            aria-pressed={bulan === b.bulan}
-          >
-            {b.bulan}
-          </button>
-        ))}
-        {loading && <Loader2 size={14} strokeWidth={2.5} className="animate-spin" />}
+      {/* Bulan selector + Export */}
+      <div className="flex items-center gap-2 flex-wrap justify-between">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-bold">Periode:</span>
+          {data.perBulan.slice(-6).reverse().map((b) => (
+            <button
+              key={b.bulan}
+              type="button"
+              onClick={() => loadBulan(b.bulan)}
+              className="brutal-btn px-3 py-1.5 text-xs"
+              style={{
+                background: bulan === b.bulan ? "var(--accent-primary)" : "var(--surface)",
+              }}
+              aria-pressed={bulan === b.bulan}
+            >
+              {b.bulan}
+            </button>
+          ))}
+          {loading && <Loader2 size={14} strokeWidth={2.5} className="animate-spin" />}
+        </div>
+        <button
+          type="button"
+          onClick={() => exportCsv(bulan, data.list)}
+          className="brutal-btn brutal-btn-neutral px-3 py-1.5 text-xs"
+          disabled={data.list.length === 0}
+          aria-label="Export CSV transaksi bulan ini"
+        >
+          <Download size={14} strokeWidth={2.5} />
+          <span>CSV</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

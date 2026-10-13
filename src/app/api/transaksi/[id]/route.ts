@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
+import { auditLog } from "@/lib/audit";
 
 export async function DELETE(
   _req: NextRequest,
@@ -24,6 +25,11 @@ export async function DELETE(
       );
     }
     await db.transaksi.delete({ where: { id } });
+    await auditLog("DELETE_TRANSAKSI", {
+      targetId: id,
+      targetLabel: t.keterangan,
+      detail: `${t.tipe} Rp ${t.nominal.toLocaleString("id-ID")} (${t.periodeBulan})`,
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("[transaksi DELETE] error", e);

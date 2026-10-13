@@ -14,11 +14,13 @@ import {
   X,
   LogOut,
   Shield,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { label: "Beranda", href: "/beranda", icon: Home },
+  { label: "Profil Saya", href: "/profil", icon: User },
   { label: "Barcode", href: "/barcode", icon: QrCode },
 ];
 

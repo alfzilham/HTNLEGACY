@@ -1,10 +1,13 @@
 import { AppShell } from "@/components/app-shell";
 import { AnggotaListClient } from "@/components/anggota-list-client";
+import { StatusBadge } from "@/components/status-badge";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { getCurrentAnggota } from "@/lib/auth";
 import { computeStatusTampil, formatRupiah, getPeriodeBulan } from "@/lib/status";
-import { TrendingUp, Users, CheckCircle2, AlertTriangle } from "lucide-react";
+import { formatPeriodeLabel } from "@/lib/periode";
+import { TrendingUp, Users, CheckCircle2, AlertTriangle, CircleDashed, ArrowRight, QrCode, User } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +42,21 @@ export default async function BerandaPage() {
   const target = total * settings.nominalIuran;
   const terkumpul = lunas * settings.nominalIuran;
 
+  // My status
+  const myAnggota = me ? anggota.find((a) => a.id === me.id) : null;
+  const myStatus = myAnggota
+    ? computeStatusTampil(myAnggota.status, settings.deadlineTanggal, now)
+    : "BELUM_LUNAS";
+
+  // Style berdasarkan status
+  const statusStyle =
+    myStatus === "LUNAS"
+      ? { bg: "var(--status-lunas-bg)", border: "#14532d", color: "#14532d", icon: CheckCircle2 }
+      : myStatus === "TERTUNGGAK"
+      ? { bg: "var(--status-tertunggak-bg)", border: "#7f1d1d", color: "#7f1d1d", icon: AlertTriangle }
+      : { bg: "#f3f0e7", border: "var(--ink)", color: "var(--ink)", icon: CircleDashed };
+  const StatusIcon = statusStyle.icon;
+
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
@@ -51,6 +69,61 @@ export default async function BerandaPage() {
             <b>{periode}</b>
           </p>
         </header>
+
+        {/* Status Anda banner */}
+        <section
+          className="brutal-card p-5"
+          style={{ background: statusStyle.bg, borderColor: statusStyle.border }}
+        >
+          <div className="flex items-center gap-4 flex-wrap">
+            <div
+              className="flex items-center justify-center w-14 h-14 shrink-0"
+              style={{
+                background: "var(--surface)",
+                border: `3px solid ${statusStyle.border}`,
+                borderRadius: 12,
+                boxShadow: "4px 4px 0px var(--ink)",
+              }}
+            >
+              <StatusIcon size={28} strokeWidth={2.5} color={statusStyle.color} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-bold uppercase tracking-wide" style={{ color: statusStyle.color }}>
+                Status Iuran Anda
+              </div>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <span className="text-2xl font-extrabold" style={{ color: statusStyle.color }}>
+                  {myStatus === "LUNAS" ? "Lunas" : myStatus === "TERTUNGGAK" ? "Tertunggak" : "Belum Lunas"}
+                </span>
+                <StatusBadge status={myStatus as "LUNAS" | "BELUM_LUNAS" | "TERTUNGGAK"} />
+              </div>
+              <p className="text-sm font-semibold mt-1" style={{ color: statusStyle.color, opacity: 0.85 }}>
+                {myStatus === "LUNAS"
+                  ? `Terima kasih, iuran ${formatPeriodeLabel(periode)} sudah lunas! 🎉`.replace("🎉", "")
+                  : myStatus === "TERTUNGGAK"
+                  ? `Lewat deadline (tgl ${settings.deadlineTanggal}). Segera bayar iuran ${formatRupiah(settings.nominalIuran)}.`
+                  : `Iuran ${formatRupiah(settings.nominalIuran)} — bayar sebelum tgl ${settings.deadlineTanggal}.`}
+              </p>
+            </div>
+            {myStatus !== "LUNAS" && (
+              <Link
+                href="/barcode"
+                className="brutal-btn brutal-btn-primary px-4 py-2.5 shrink-0"
+              >
+                <QrCode size={16} strokeWidth={2.5} />
+                <span>Bayar Sekarang</span>
+                <ArrowRight size={14} strokeWidth={2.5} />
+              </Link>
+            )}
+            <Link
+              href="/profil"
+              className="brutal-btn brutal-btn-neutral px-4 py-2.5 shrink-0"
+            >
+              <User size={16} strokeWidth={2.5} />
+              <span>Profil</span>
+            </Link>
+          </div>
+        </section>
 
         {/* Progress bar */}
         <section className="brutal-card p-5">

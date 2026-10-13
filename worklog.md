@@ -1,6 +1,66 @@
 # SIDU — Worklog
 
-## Status: MVP LENGKAP (Semua 16 todo selesai)
+## Status: MVP LENGKAP + Enhancements (Cron Review #2 selesai)
+
+## Checkpoint 4: Bug Fix + Fitur Baru (Profil, Trend, Export CSV) + Polish UI
+
+### Yang Selesai di Round Ini
+
+**Bug Fixes**
+1. **DELETE_TRANSAKSI audit log missing** — endpoint `DELETE /api/transaksi/[id]` tidak tercatat di audit log. Fixed: tambah `auditLog("DELETE_TRANSAKSI", ...)` setelah hapus.
+2. **GENERATE_LAPORAN audit log missing** — endpoint `POST /api/laporan/generate` tidak tercatat. Fixed: tambah `auditLog("GENERATE_LAPORAN", ...)` setelah generate zip.
+
+**Todo 16 — Halaman Profil Anggota (NEW)**
+- Halaman `/profil` (anggota, read-only) — anggota lihat data diri sendiri tanpa bisa edit (sesuai PRD: anggota tidak bisa ubah password/data sendiri).
+- Konten: identitas (nama, gender, no HP, tanggal bergabung), status iuran periode berjalan dengan nominal iuran & deadline, riwayat struk 5 terakhir periode ini, riwayat transaksi iuran 10 terakhir (semua bulan), info keamanan tentang enkripsi password.
+- CTA: "Bayar Sekarang" (link ke /barcode) jika belum lunas, "Profil" button.
+- Add `/profil` ke proxy.ts ANGGOTA_PROTECTED + sidebar AppShell.
+
+**Todo 17 — Trend Comparison di Dashboard Admin (NEW)**
+- Komponen `TrendBadge` reusable: tampilkan % perubahan current vs previous, color-coded (hijau=naik bagus, merah=naik buruk untuk pengeluaran).
+- Helper `lib/periode.ts`: `getPrevPeriodeBulan()`, `formatPeriodeLabel()`, `pctChange()`.
+- Dashboard admin: stat cards Kas Masuk & Kas Keluar kini menampilkan TrendBadge (+167%, +67%, dll) + label "(vs Sep 2026)".
+- Icon status di breakdown (CheckCircle2/CircleDashed/AlertTriangle) untuk visual clarity.
+
+**Todo 18 — Export CSV Transaksi (NEW)**
+- Tombol "CSV" di KasView (admin & user) — download transaksi bulan terpilih sebagai CSV.
+- Format: Tanggal, Tipe, Nominal, Keterangan, Periode, Dari Struk (Ya/Tidak).
+- UTF-8 BOM untuk Excel compatibility, filename `transaksi-{bulan}.csv`.
+
+**Todo 19 — Beranda Status Banner (NEW + Polish)**
+- Banner prominent di atas progress bar beranda: "Status Iuran Anda" dengan icon & color sesuai status (hijau=Lunas, merah=Tertunggak, netral=Belum Lunas).
+- CTA contextual: "Bayar Sekarang" → /barcode (jika belum lunas), "Profil" → /profil.
+- Pesan dinamis: "Terima kasih, iuran sudah lunas!" / "Lewat deadline, segera bayar" / "Bayar sebelum tgl X".
+
+**Todo 20 — Skeleton Loader Component (NEW)**
+- Komponen `Skeleton`, `SkeletonCard`, `SkeletonTable` di `src/components/skeleton.tsx`.
+- Brutalist style dengan border 2px + animated pulse gradient.
+- Siap dipakai di halaman yang loading state-nya perlu polish (belum diaplikasi full — untuk phase berikutnya).
+
+**Todo 21 — Download Struk Individual (NEW)**
+- Tombol download (icon Download) di modal preview struk admin — admin bisa download 1 gambar struk saja.
+- Filename: `struk-{nama-lengkap}.jpg`.
+
+**Polish UI Tambahan**
+- Applied `brutal-hover-lift` ke quick links di admin dashboard.
+- Applied `brutal-animate-in` ke upload-struk-modal.
+- Applied `brutal-select` ke filter status di admin anggota.
+- Add icon ke status breakdown di dashboard (CheckCircle2/CircleDashed/AlertTriangle).
+- Info card dengan tips di dashboard admin.
+- Mobile-responsive check: hamburger menu, card layout di mobile.
+
+### Verifikasi End-to-End (agent-browser)
+- ✅ Halaman `/profil` baru: render lengkap (identitas, status, riwayat struk, riwayat transaksi, info keamanan)
+- ✅ Beranda banner: Test User 1 (TERTUNGGAK) → red banner "Tertunggak" + "Bayar Sekarang"
+- ✅ Beranda banner: Dewi Test (LUNAS) → green banner "Lunas" + "Terima kasih"
+- ✅ Dashboard admin trend: "(vs Sep 2026)" + TrendBadge +167% (Masuk), +67% (Keluar)
+- ✅ Export CSV: tombol download di /admin/kas & /kas
+- ✅ Download struk: tombol di modal preview struk
+- ✅ Audit log: DELETE_TRANSAKSI & GENERATE_LAPORAN sekarang tercatat
+- ✅ Semua 15 halaman (8 admin + 7 user) return 200
+- ✅ Lint bersih (0 error, 0 warning)
+
+---
 
 ## Checkpoint 3: Admin Lengkap + Transaksi/Grafik + Import + Siklus Bulanan + Audit Log + Polish UI
 
@@ -127,6 +187,15 @@
 
 ### Rekomendasi Phase Berikutnya
 1. **Production hardening**: ganti WAHA stub ke WAHA instance sungguhan, set GEMINI_API_KEY & ENCRYPTION_KEY production, migrasi ke PostgreSQL.
-2. **Fitur tambahan**: reminder WA H-sebelum deadline (PRD Could Have), export PDF laporan, multi-admin dengan akun individual & log terpisah.
-3. **Polish**: pagination untuk tabel anggota jika skala > 100 orang, optimistic UI update untuk reduce loading states, skeleton loaders.
-4. **Testing**: tambah unit test untuk crypto.ts (encrypt/decrypt round-trip), integration test untuk upload struk → OCR → approve flow, E2E test untuk siklus bulanan.
+2. **Fitur tambahan**: reminder WA H-sebelum deadline (PRD Could Have), export PDF laporan, multi-admin dengan akun individual & log terpisah, global search di top bar admin, pagination tabel anggota untuk skala > 100 orang.
+3. **Polish**: apply Skeleton component ke loading states (sudah dibuat, belum dipakai), optimistic UI updates, micro-interactions (button press feedback, card hover lift lebih banyak), dark mode toggle (next-themes sudah ada tapi PRD bilang no dark mode MVP).
+4. **Testing**: unit test untuk crypto.ts (encrypt/decrypt round-trip), integration test untuk upload struk → OCR → approve flow, E2E test untuk siklus bulanan, test edge cases (OCR gagal, password salah 3x, import file invalid).
+5. **UX improvements**: toast notifications (sonner sudah installed), keyboard shortcuts (Esc tutup modal, Enter submit form), confirmation dialogs yang lebih jelas, help tooltips.
+
+### Unresolved Issues / Risks
+- **SQLite untuk MVP**: kalau scale > 100 anggota dengan banyak struk, perlu migrate ke PostgreSQL. Schema sudah compatible (tinggal ganti provider + enum native).
+- **WAHA stub**: notifikasi WA belum benar-benar terkirim. Production perlu setup WAHA instance + ganti isi `sendWahaMessage()`.
+- **OCR dependency**: hanya Gemini AI. Kalau Gemini API down/rate-limited, struk auto-REJECTED. Hook Python OCR tersedia tapi belum diimplementasi.
+- **Password reversible encryption**: trade-off keamanan disadari (DB + key bocor = password terbuka). Mitigasi: edukasi user pakai password unik.
+- **Storage struk local filesystem**: tidak ada backup otomatis. Reset siklus hapus permanen. Production perlu Supabase Storage atau S3.
+- **No rate limiting**: endpoint login/verify-password tidak ada rate limit. Rentan brute-force (ARCHITECTURE.md §4.4 bilang "disarankan" tapi belum implementasi).

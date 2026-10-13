@@ -51,7 +51,7 @@ export function proxy(req: NextRequest) {
   }
 
   // 2. Rute anggota
-  const ANGGOTA_PROTECTED = ["/beranda", "/daftar", "/kas", "/barcode"];
+  const ANGGOTA_PROTECTED = ["/beranda", "/daftar", "/kas", "/barcode", "/profil"];
   const isAnggotaProtected = ANGGOTA_PROTECTED.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );

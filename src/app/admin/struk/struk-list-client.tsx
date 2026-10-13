@@ -14,6 +14,7 @@ import {
   Wallet,
   Calendar,
   Building2,
+  Download,
 } from "lucide-react";
 import { StatusBadge, statusBadgeFromStruk } from "@/components/status-badge";
 
@@ -314,7 +315,7 @@ export function StrukListClient({
               {/* Image */}
               <div>
                 <div
-                  className="w-full bg-[var(--bg-base)] flex items-center justify-center"
+                  className="w-full bg-[var(--bg-base)] flex items-center justify-center relative"
                   style={{ border: "3px solid var(--ink)", borderRadius: 8, minHeight: 300 }}
                 >
                   <img
@@ -322,6 +323,15 @@ export function StrukListClient({
                     alt={`Struk ${previewStruk.anggota.namaLengkap}`}
                     className="max-w-full max-h-[400px] object-contain"
                   />
+                  <a
+                    href={previewStruk.imageUrl}
+                    download={`struk-${previewStruk.anggota.namaLengkap.replace(/\s+/g, "-").toLowerCase()}.jpg`}
+                    className="brutal-btn brutal-btn-neutral p-2 absolute top-2 right-2"
+                    aria-label="Download struk"
+                    title="Download gambar struk"
+                  >
+                    <Download size={16} strokeWidth={2.5} />
+                  </a>
                 </div>
               </div>
 

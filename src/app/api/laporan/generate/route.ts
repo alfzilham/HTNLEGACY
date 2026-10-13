@@ -19,6 +19,7 @@ import * as XLSX from "xlsx";
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
+import { auditLog } from "@/lib/audit";
 
 export async function POST() {
   if (!(await isAdmin())) {
@@ -115,6 +116,11 @@ Statistik:
 
     const zipBuffer = Buffer.concat(chunks);
     const filename = `laporan-${periode}.zip`;
+
+    await auditLog("GENERATE_LAPORAN", {
+      targetLabel: `Periode ${periode}`,
+      detail: `${addedStruk} struk + rekap-anggota.xlsx (${zipBuffer.length} bytes)`,
+    });
 
     return new NextResponse(zipBuffer, {
       status: 200,
