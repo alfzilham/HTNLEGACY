@@ -24,6 +24,7 @@ export default async function AdminAnggotaPage() {
   const now = new Date();
   const list = anggota.map((a) => ({
     ...a,
+    createdAt: a.createdAt.toISOString(),
     statusTampil: computeStatusTampil(a.status, settings.deadlineTanggal, now),
   }));
 

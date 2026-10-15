@@ -48,7 +48,12 @@ export default async function AdminAuditLogPage() {
         </section>
       )}
 
-      <AuditLogList initialLogs={logs} />
+      <AuditLogList
+        initialLogs={logs.map((log) => ({
+          ...log,
+          createdAt: log.createdAt.toISOString(),
+        }))}
+      />
     </div>
   );
 }

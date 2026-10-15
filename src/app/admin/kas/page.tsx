@@ -29,6 +29,10 @@ export default async function AdminKasPage() {
     .sort((a, b) => a.bulan.localeCompare(b.bulan));
 
   const current = bulanMap.get(bulan) ?? { masuk: 0, keluar: 0 };
+  const serializableList = list.map((transaction) => ({
+    ...transaction,
+    createdAt: transaction.createdAt.toISOString(),
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -41,7 +45,7 @@ export default async function AdminKasPage() {
       <KasView
         initial={{
           bulan,
-          list,
+          list: serializableList,
           summary: {
             masuk: current.masuk,
             keluar: current.keluar,
