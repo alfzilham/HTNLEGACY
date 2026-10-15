@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, KeyRound, ArrowRight, Loader2 } from "lucide-react";
+import { KeyRound, ArrowRight, Loader2 } from "lucide-react";
 import { AuthShell } from "@/components/auth-shell";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function AdminGatePage() {
   const router = useRouter();
@@ -76,7 +77,7 @@ export default function AdminGatePage() {
               boxShadow: "4px 4px 0px var(--accent-primary)",
             }}
           >
-            <Shield size={26} strokeWidth={2.5} color="#ffffff" />
+            <BrandLogo size={54} />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight">
             Panel Admin

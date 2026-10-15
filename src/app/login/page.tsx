@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { User, Venus, Mars, KeyRound, ArrowRight, Loader2 } from "lucide-react";
 import { AuthShell } from "@/components/auth-shell";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function LoginPage() {
               boxShadow: "4px 4px 0px var(--ink)",
             }}
           >
-            <span className="font-extrabold text-2xl">S</span>
+            <BrandLogo size={54} />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight">
             Masuk SIDU

@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AdminGlobalSearch } from "@/components/admin-global-search";
 import { PendingStrukBadge } from "@/components/pending-struk-badge";
+import { BrandLogo } from "@/components/brand-logo";
 
 const NAV = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
@@ -101,7 +102,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 borderRadius: 8,
               }}
             >
-              <span className="font-extrabold text-sm text-[var(--ink)]">A</span>
+              <BrandLogo size={34} />
             </div>
             <div className="flex flex-col leading-tight">
               <span className="font-extrabold text-base text-white">SIDU Admin</span>

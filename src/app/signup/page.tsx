@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AuthShell } from "@/components/auth-shell";
 import { PasswordStrength } from "@/components/password-strength";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function SignupPage() {
               boxShadow: "4px 4px 0px var(--ink)",
             }}
           >
-            <span className="font-extrabold text-2xl">S</span>
+            <BrandLogo size={54} />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight">
             Daftar Akun

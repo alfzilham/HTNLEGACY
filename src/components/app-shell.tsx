@@ -17,6 +17,7 @@ import {
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand-logo";
 
 const NAV = [
   { label: "Beranda", href: "/beranda", icon: Home },
@@ -159,9 +160,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 boxShadow: "3px 3px 0px var(--ink)",
               }}
             >
-              <span className="font-extrabold text-sm" style={{ color: "var(--ink)" }}>
-                S
-              </span>
+              <BrandLogo size={34} />
             </div>
             <div className="flex flex-col leading-tight">
               <span className="font-extrabold text-base">SIDU</span>

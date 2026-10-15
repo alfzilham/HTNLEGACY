@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   keywords: ["SIDU", "iuran", "kas", "organisasi", "HTN 26"],
   authors: [{ name: "SIDU Team" }],
   icons: {
-    icon: "/logo.svg",
+    icon: "/favicon.ico",
   },
 };
 
