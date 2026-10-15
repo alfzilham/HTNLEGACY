@@ -35,12 +35,6 @@ export const TIPE_TRANSAKSI = {
 } as const;
 export type TipeTransaksi = (typeof TIPE_TRANSAKSI)[keyof typeof TIPE_TRANSAKSI];
 
-export const OCR_SOURCE = {
-  GEMINI: "gemini",
-  PYTHON_OCR: "python-ocr", // hook masa depan
-} as const;
-export type OcrSource = (typeof OCR_SOURCE)[keyof typeof OCR_SOURCE];
-
 // ============================================================
 // Validators — dipakai sebelum insert/update
 // ============================================================

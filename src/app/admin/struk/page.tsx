@@ -1,5 +1,4 @@
 import { db } from "@/lib/db";
-import { parseOcrResult } from "@/lib/ocr";
 import { getPeriodeBulan } from "@/lib/status";
 import { StrukListClient } from "./struk-list-client";
 import { Inbox } from "lucide-react";
@@ -22,11 +21,6 @@ export default async function AdminStrukPage() {
   const pending = strukList.filter((s) => s.statusStruk === "PENDING");
   const decided = strukList.filter((s) => s.statusStruk !== "PENDING");
 
-  const parsed = strukList.map((s) => ({
-    ...s,
-    ocrParsed: parseOcrResult(s.ocrRawText),
-  }));
-
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -43,7 +37,14 @@ export default async function AdminStrukPage() {
           description="Anggota yang upload struk pembayaran akan muncul di sini untuk diverifikasi."
         />
       ) : (
-        <StrukListClient strukList={parsed} periode={periode} />
+        <StrukListClient
+          strukList={strukList.map((s) => ({
+            ...s,
+            createdAt: s.createdAt.toISOString(),
+            verifiedAt: s.verifiedAt?.toISOString() ?? null,
+          }))}
+          periode={periode}
+        />
       )}
     </div>
   );

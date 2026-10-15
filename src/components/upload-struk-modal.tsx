@@ -262,7 +262,7 @@ export function UploadStrukModal({
               ) : (
                 <Upload size={16} strokeWidth={2.5} />
               )}
-              <span>{uploadLoading ? "Memproses OCR..." : "Upload & Proses"}</span>
+              <span>{uploadLoading ? "Mengirim struk..." : "Kirim untuk Review"}</span>
             </button>
           </div>
         )}

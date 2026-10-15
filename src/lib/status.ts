@@ -62,7 +62,7 @@ export function formatRupiah(n: number): string {
 }
 
 /**
- * Normalisasi nomor HP/WA ke format internasional 62xxx (untuk WAHA).
+ * Normalisasi nomor HP/WA ke format internasional 62xxx untuk tautan wa.me.
  * Menerima: 08xxx, +628xxx, 628xxx, 8xxx.
  */
 export function normalizePhone(raw: string): string {

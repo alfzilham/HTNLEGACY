@@ -25,7 +25,7 @@ Anggota dapat melihat status pembayaran, daftar anggota, barcode pembayaran, riw
 - Akses admin menggunakan password bersama yang disimpan di environment variable.
 - Dashboard status pembayaran anggota: lunas, belum lunas, dan tertunggak.
 - Upload bukti pembayaran dengan verifikasi password per aksi.
-- OCR bukti pembayaran melalui service eksternal atau Gemini fallback.
+- Review receipt dilakukan manual oleh Admin/Bendahara.
 - Verifikasi admin dengan aksi approve dan reject.
 - Pencatatan transaksi pemasukan otomatis dari struk approved.
 - Pencatatan transaksi pemasukan dan pengeluaran manual.
@@ -48,7 +48,7 @@ Anggota dapat melihat status pembayaran, daftar anggota, barcode pembayaran, riw
 | Database | SQLite melalui Prisma |
 | Autentikasi | JWT berbasis httpOnly cookie |
 | Enkripsi password anggota | AES-256-GCM |
-| OCR | OCR service eksternal dan Gemini fallback |
+| Receipt | Upload file dan review manual Admin/Bendahara |
 | Laporan | XLSX dan Archiver |
 | Grafik | Recharts |
 | Reverse proxy | Caddy |
@@ -136,10 +136,6 @@ Template lengkap tersedia pada [.env.example](.env.example).
 | `JWT_SECRET` | Ya | Secret untuk signing session JWT |
 | `ENCRYPTION_KEY` | Ya | 64 karakter hex atau 32 karakter string untuk AES-256-GCM |
 | `ADMIN_PASSWORD` | Ya | Password akses panel admin |
-| `OCR_SERVICE_URL` | Tidak | Endpoint service OCR eksternal |
-| `WAHA_BASE_URL` | Tidak | Base URL WAHA |
-| `WAHA_SESSION` | Tidak | Nama session WAHA |
-| `WAHA_API_KEY` | Tidak | API key WAHA jika diperlukan |
 | `NEXT_PUBLIC_INSTANCE_NAME` | Tidak | Nama instance yang ditampilkan di UI |
 | `DEBUG_MW` | Tidak | Set `1` untuk log middleware |
 
@@ -152,7 +148,7 @@ src/
 ├── app/                    # Pages dan API route handlers
 ├── components/             # Komponen UI dan shell aplikasi
 ├── hooks/                  # React hooks
-├── lib/                    # Database, auth, session, OCR, dan helper
+├── lib/                    # Database, auth, session, dan helper
 └── proxy.ts                # Proteksi route berbasis session cookie
 
 prisma/
@@ -225,8 +221,8 @@ Untuk deployment berskala lebih besar, pertimbangkan memindahkan database ke Pos
 - `TERTUNGGAK` dihitung secara dinamis berdasarkan deadline, bukan disimpan permanen di database.
 - Record `Transaksi` dipertahankan sebagai histori permanen.
 - Reset siklus mengubah status anggota dan membersihkan file upload periode berjalan.
-- Integrasi WAHA saat ini menggunakan stub log-only sampai service production dikonfigurasi.
-- OCR service eksternal bersifat opsional dan memiliki fallback ke Gemini.
+- WhatsApp hanya menggunakan tautan manual `wa.me`; tidak ada service WhatsApp yang berjalan terus-menerus.
+- Receipt yang diupload langsung berstatus `PENDING` dan diverifikasi manual oleh Admin/Bendahara.
 
 ## Lisensi
 

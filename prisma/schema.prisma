@@ -42,8 +42,6 @@ model Struk {
   anggota       Anggota   @relation(fields: [anggotaId], references: [id], onDelete: Cascade)
   imageUrl      String    // path local: /uploads/struk/{YYYY-MM}/{anggotaId}-{ts}.ext
   statusStruk   String    @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
-  ocrRawText    String?   // hasil OCR mentah (JSON string terstruktur)
-  ocrSource     String?   // "gemini" | "python-ocr" (hook masa depan)
   ditolakAlasan String?
   periodeBulan  String    // "YYYY-MM" — untuk grouping & reset siklus
   createdAt     DateTime  @default(now())
