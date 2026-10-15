@@ -14,7 +14,7 @@ import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getPeriodeBulan } from "@/lib/status";
-import { ZipArchive as ArchiverZip } from "archiver";
+import { ZipArchive } from "archiver";
 import * as XLSX from "xlsx";
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
@@ -27,7 +27,7 @@ export async function POST() {
   }
   try {
     const periode = getPeriodeBulan();
-    const [strukList, anggotaList, settings] = await Promise.all([
+    const [strukList, anggotaList, transaksiList, settings] = await Promise.all([
       db.struk.findMany({
         where: { periodeBulan: periode, statusStruk: "APPROVED" },
         include: { anggota: { select: { namaLengkap: true, gender: true } } },
@@ -37,8 +37,19 @@ export async function POST() {
         orderBy: [{ gender: "asc" }, { namaLengkap: "asc" }],
         select: { id: true, gender: true, namaLengkap: true, noHpWa: true, status: true },
       }),
+      db.transaksi.findMany({
+        where: { periodeBulan: periode, tipe: "MASUK", strukId: { not: null } },
+        select: { anggotaId: true, nominal: true },
+      }),
       getSettings(),
     ]);
+
+    const paidByAnggota = new Map<string, number>();
+    for (const t of transaksiList) {
+      if (!t.anggotaId) continue;
+      paidByAnggota.set(t.anggotaId, (paidByAnggota.get(t.anggotaId) ?? 0) + t.nominal);
+    }
+    const totalKasMasuk = transaksiList.reduce((sum, t) => sum + t.nominal, 0);
 
     // Build Excel rekap
     const rekapData = anggotaList.map((a, i) => ({
@@ -48,7 +59,7 @@ export async function POST() {
       "No HP/WA": a.noHpWa,
       Status: a.status === "LUNAS" ? "LUNAS" : "BELUM_LUNAS",
       "Nominal Iuran": settings.nominalIuran,
-      "Sudah Bayar": a.status === "LUNAS" ? settings.nominalIuran : 0,
+      "Sudah Bayar": paidByAnggota.get(a.id) ?? 0,
       Periode: periode,
     }));
     const ws = XLSX.utils.json_to_sheet(rekapData);
@@ -57,7 +68,7 @@ export async function POST() {
     const excelBuffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
     // Build zip stream
-    const archive = new ArchiverZip({ zlib: { level: 6 } });
+    const archive = new ZipArchive({ zlib: { level: 6 } });
 
     // Tambahkan file Excel
     archive.append(excelBuffer, { name: "rekap-anggota.xlsx" });
@@ -75,7 +86,7 @@ Statistik:
 - Total anggota: ${anggotaList.length}
 - Anggota LUNAS: ${anggotaList.filter((a) => a.status === "LUNAS").length}
 - Struk APPROVED: ${strukList.length}
-- Total kas masuk: Rp ${(anggotaList.filter((a) => a.status === "LUNAS").length * settings.nominalIuran).toLocaleString("id-ID")}
+- Total kas masuk: Rp ${totalKasMasuk.toLocaleString("id-ID")}
 - Nominal iuran: Rp ${settings.nominalIuran.toLocaleString("id-ID")}
 `;
     archive.append(readme, { name: "README.txt" });
@@ -89,13 +100,20 @@ Statistik:
       try {
         const imgBuf = await readFile(absPath);
         // Unique filename: {namaLengkap}.ext (handle duplicate names)
-        let name = `${s.anggota.namaLengkap}`;
+        const safeBase = s.anggota.namaLengkap
+          .normalize("NFKC")
+          .replace(/[\\/:*?"<>|\x00-\x1f]/g, "-")
+          .replace(/\.\./g, "-")
+          .replace(/\s+/g, " ")
+          .trim()
+          .replace(/^\.+|\.+$/g, "") || "struk";
+        let name = safeBase;
         let counter = 2;
-        while (usedNames.has(`${name}.jpg`)) {
-          name = `${s.anggota.namaLengkap}-${counter}`;
+        while (usedNames.has(name)) {
+          name = `${safeBase}-${counter}`;
           counter++;
         }
-        usedNames.add(`${name}.jpg`);
+        usedNames.add(name);
         const ext = s.imageUrl.endsWith(".png") ? "png" : s.imageUrl.endsWith(".webp") ? "webp" : "jpg";
         archive.append(imgBuf, { name: `struk/${name}.${ext}` });
         addedStruk++;
