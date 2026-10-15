@@ -5,7 +5,7 @@ import { getSettings } from "@/lib/settings";
 import { getCurrentAnggota } from "@/lib/auth";
 import { computeStatusTampil, getPeriodeBulan } from "@/lib/status";
 import { StatusBadge } from "@/components/status-badge";
-import { CheckCircle2, CircleDashed, AlertTriangle } from "lucide-react";
+import { CheckCircle2, CircleDashed, AlertTriangle, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 
 export const dynamic = "force-dynamic";
@@ -13,16 +13,18 @@ export const dynamic = "force-dynamic";
 const CONFIG: Record<
   "lunas" | "belum-lunas" | "tertunggak",
   {
+    label: string;
     title: string;
     filter: "LUNAS" | "BELUM_LUNAS" | "TERTUNGGAK";
     bg: string;
     fg: string;
     border: string;
-    icon: React.ElementType;
+    icon: LucideIcon;
     desc: string;
   }
 > = {
   lunas: {
+    label: "yang sudah lunas",
     title: "Anggota Lunas",
     filter: "LUNAS",
     bg: "var(--status-lunas-bg)",
@@ -32,6 +34,7 @@ const CONFIG: Record<
     desc: "Anggota yang sudah membayar iuran bulan ini (struk approved).",
   },
   "belum-lunas": {
+    label: "yang belum lunas",
     title: "Anggota Belum Lunas",
     filter: "BELUM_LUNAS",
     bg: "#f3f0e7",
@@ -41,6 +44,7 @@ const CONFIG: Record<
     desc: "Anggota yang belum membayar — masih dalam batas waktu (sebelum deadline).",
   },
   tertunggak: {
+    label: "yang tertunggak",
     title: "Anggota Tertunggak",
     filter: "TERTUNGGAK",
     bg: "var(--status-tertunggak-bg)",

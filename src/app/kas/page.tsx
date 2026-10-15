@@ -30,6 +30,10 @@ export default async function KasPage() {
     .sort((a, b) => a.bulan.localeCompare(b.bulan));
 
   const current = bulanMap.get(bulan) ?? { masuk: 0, keluar: 0 };
+  const serializableList = list.map((transaction) => ({
+    ...transaction,
+    createdAt: transaction.createdAt.toISOString(),
+  }));
 
   return (
     <AppShell>
@@ -43,7 +47,7 @@ export default async function KasPage() {
         <KasView
           initial={{
             bulan,
-            list,
+            list: serializableList,
             summary: {
               masuk: current.masuk,
               keluar: current.keluar,

@@ -6,7 +6,7 @@
 // ============================================================
 
 import jwt from "jsonwebtoken";
-import type { RequestCookies } from "next/dist/server/web/extension";
+import type { RequestCookies } from "next/dist/server/web/spec-extension/cookies";
 
 const ANGGOTA_COOKIE = "sidu_session";
 const ADMIN_COOKIE = "sidu_admin";
