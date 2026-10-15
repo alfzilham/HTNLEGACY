@@ -2,13 +2,12 @@
 // GET /api/anggota/[id]/struk — list semua struk anggota (admin only)
 // ------------------------------------------------------------
 // Return seluruh struk anggota (semua periode, semua status),
-// dengan info OCR parsed.
+// tanpa pemrosesan isi receipt otomatis.
 // ============================================================
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
-import { parseOcrResult } from "@/lib/ocr";
 
 export async function GET(
   _req: NextRequest,
@@ -39,13 +38,8 @@ export async function GET(
     orderBy: { createdAt: "desc" },
   });
 
-  const strukWithParsed = strukList.map((s) => ({
-    ...s,
-    ocrParsed: parseOcrResult(s.ocrRawText),
-  }));
-
   return NextResponse.json({
     anggota,
-    strukList: strukWithParsed,
+    strukList,
   });
 }

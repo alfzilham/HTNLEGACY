@@ -11,7 +11,7 @@
 // Reject:
 //   - Struk.statusStruk = REJECTED, ditolakAlasan, verifiedAt = now
 //   - Anggota.status kembali ke kondisi sebelumnya (BELUM_LUNAS — TERTUNGGAK derived)
-//   - WAHA stub: kirim notifikasi (best-effort, try/catch terpisah)
+//   - Reject mengembalikan tautan WhatsApp manual (wa.me), tanpa pengiriman otomatis.
 //
 // Hanya admin.
 // ============================================================
@@ -21,7 +21,7 @@ import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { getPeriodeBulan } from "@/lib/status";
-import { sendWahaMessage, buildStrukDitolakMessage } from "@/lib/waha";
+import { buildStrukDitolakMessage, buildWhatsAppManualUrl } from "@/lib/whatsapp";
 import { auditLog } from "@/lib/audit";
 
 export async function POST(
@@ -154,15 +154,12 @@ export async function POST(
       detail: alasanText,
     });
 
-    // WAHA stub — best-effort, try/catch TERPISAH dari logika utama
-    try {
-      const msg = buildStrukDitolakMessage(struk.anggota.namaLengkap, alasanText);
-      await sendWahaMessage(struk.anggota.noHpWa, msg);
-    } catch (e) {
-      console.warn("[verify struk] WAHA gagal (best-effort, tidak menggagalkan reject):", e);
-    }
+    const whatsappUrl = buildWhatsAppManualUrl(
+      struk.anggota.noHpWa,
+      buildStrukDitolakMessage(struk.anggota.namaLengkap, alasanText)
+    );
 
-    return NextResponse.json({ ok: true, action: "reject" });
+    return NextResponse.json({ ok: true, action: "reject", whatsappUrl });
   } catch (e) {
     console.error("[struk verify] error", e);
     return NextResponse.json(

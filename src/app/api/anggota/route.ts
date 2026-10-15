@@ -13,14 +13,14 @@ import { getSettings } from "@/lib/settings";
 import { computeStatusTampil } from "@/lib/status";
 import { isValidGender, isValidStatusIuranStored } from "@/lib/constants";
 import { encryptPassword } from "@/lib/crypto";
-import { isValidIndoPhone, normalizePhone } from "@/lib/status";
+import { isValidIndoPhone, normalizePhone, getPeriodeBulan } from "@/lib/status";
 import { getAnggotaSession } from "@/lib/session";
 
 export async function GET() {
   if (!(await getAnggotaSession()) && !(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const [anggota, settings] = await Promise.all([
+  const [anggota, settings, activeStruk] = await Promise.all([
     db.anggota.findMany({
       orderBy: [{ gender: "asc" }, { namaLengkap: "asc" }],
       select: {
@@ -33,12 +33,19 @@ export async function GET() {
       },
     }),
     getSettings(),
+    db.struk.findMany({
+      where: { periodeBulan: getPeriodeBulan(), statusStruk: { in: ["PENDING", "APPROVED"] } },
+      select: { anggotaId: true, statusStruk: true },
+    }),
   ]);
+
+  const activeByAnggota = new Map(activeStruk.map((s) => [s.anggotaId, s.statusStruk]));
 
   const now = new Date();
   const list = anggota.map((a) => ({
     ...a,
     statusTampil: computeStatusTampil(a.status, settings.deadlineTanggal, now),
+    receiptAktif: activeByAnggota.get(a.id) ?? null,
   }));
 
   return NextResponse.json({ anggota: list, settings });

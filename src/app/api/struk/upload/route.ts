@@ -1,5 +1,5 @@
 // POST /api/struk/upload
-// Upload struk dengan verifikasi password per-aksi, lalu jalankan OCR.
+// Upload struk dengan verifikasi password per-aksi untuk review manual.
 
 import { NextRequest, NextResponse } from "next/server";
 import { mkdir, unlink, writeFile } from "fs/promises";
@@ -7,7 +7,6 @@ import path from "path";
 import { db } from "@/lib/db";
 import { getPeriodeBulan } from "@/lib/status";
 import { verifyPassword } from "@/lib/crypto";
-import { runOcr } from "@/lib/ocr";
 import { checkRateLimit, getClientIp, resetRateLimit } from "@/lib/rate-limit";
 
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -88,12 +87,15 @@ export async function POST(req: NextRequest) {
     await writeFile(absolutePath, imageBuffer, { flag: "wx" });
 
     try {
-      const ocr = await runOcr(imageBuffer, file.type);
-      if (!ocr.ok || !ocr.rawText) {
+      const activeAfterSave = await db.struk.findFirst({
+        where: { anggotaId, periodeBulan: periode, statusStruk: { in: ["PENDING", "APPROVED"] } },
+        select: { statusStruk: true },
+      });
+      if (activeAfterSave) {
         await unlink(absolutePath).catch(() => undefined);
         return NextResponse.json(
-          { error: "Struk tidak dapat dibaca. Silakan upload gambar yang lebih jelas." },
-          { status: 422 }
+          { error: `Sudah ada struk ${activeAfterSave.statusStruk.toLowerCase()} untuk periode ini.` },
+          { status: 409 }
         );
       }
 
@@ -102,8 +104,6 @@ export async function POST(req: NextRequest) {
           anggotaId,
           imageUrl: `/uploads/struk/${periode}/${filename}`,
           statusStruk: "PENDING",
-          ocrRawText: ocr.rawText,
-          ocrSource: ocr.source,
           periodeBulan: periode,
         },
       });
