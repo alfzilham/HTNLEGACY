@@ -173,7 +173,7 @@ export default function SignupPage() {
               />
             </div>
             <p className="text-xs text-[#6b6b6b] font-semibold mt-1">
-              Dipakai untuk notifikasi WhatsApp (struk ditolak, dsb).
+              Dipakai untuk kontak WhatsApp manual jika diperlukan.
             </p>
           </div>
 

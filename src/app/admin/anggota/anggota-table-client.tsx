@@ -81,13 +81,6 @@ export function AnggotaTableClient({
       createdAt: string;
       verifiedAt: string | null;
       ditolakAlasan: string | null;
-      ocrSource: string | null;
-      ocrParsed: {
-        nominal: number | null;
-        tanggal: string | null;
-        namaBank: string | null;
-        rawOcrText: string;
-      } | null;
     }>;
   } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -757,28 +750,6 @@ export function AnggotaTableClient({
                           Periode: {s.periodeBulan}
                           {s.verifiedAt && ` · Diproses: ${new Date(s.verifiedAt).toLocaleDateString("id-ID")}`}
                         </div>
-                        {s.ocrParsed && (
-                          <div className="flex flex-wrap gap-3 mt-1.5 text-xs">
-                            {s.ocrParsed.nominal !== null && (
-                              <span className="flex items-center gap-1 font-semibold text-[#6b6b6b]">
-                                <Wallet size={11} strokeWidth={2.5} />
-                                <span className="tabular-nums">Rp {s.ocrParsed.nominal.toLocaleString("id-ID")}</span>
-                              </span>
-                            )}
-                            {s.ocrParsed.tanggal && (
-                              <span className="flex items-center gap-1 font-semibold text-[#6b6b6b]">
-                                <Calendar size={11} strokeWidth={2.5} />
-                                <span>{s.ocrParsed.tanggal}</span>
-                              </span>
-                            )}
-                            {s.ocrParsed.namaBank && (
-                              <span className="flex items-center gap-1 font-semibold text-[#6b6b6b]">
-                                <Building2 size={11} strokeWidth={2.5} />
-                                <span>{s.ocrParsed.namaBank}</span>
-                              </span>
-                            )}
-                          </div>
-                        )}
                         {s.ditolakAlasan && (
                           <div
                             className="mt-1.5 px-2 py-1 text-xs font-semibold"

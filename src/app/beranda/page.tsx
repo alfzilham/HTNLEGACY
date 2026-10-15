@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function BerandaPage() {
   const me = await getCurrentAnggota();
-  const [anggota, settings] = await Promise.all([
+  const [anggota, settings, activeStruk] = await Promise.all([
     db.anggota.findMany({
       orderBy: [{ gender: "asc" }, { namaLengkap: "asc" }],
       select: {
@@ -25,12 +25,19 @@ export default async function BerandaPage() {
       },
     }),
     getSettings(),
+    db.struk.findMany({
+      where: { periodeBulan: getPeriodeBulan(), statusStruk: { in: ["PENDING", "APPROVED"] } },
+      select: { anggotaId: true, statusStruk: true },
+    }),
   ]);
+
+  const activeByAnggota = new Map(activeStruk.map((s) => [s.anggotaId, s.statusStruk]));
 
   const now = new Date();
   const list = anggota.map((a) => ({
     ...a,
     statusTampil: computeStatusTampil(a.status, settings.deadlineTanggal, now),
+    receiptAktif: activeByAnggota.get(a.id) ?? null,
   }));
 
   const total = anggota.length;

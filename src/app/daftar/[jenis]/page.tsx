@@ -3,7 +3,7 @@ import { AnggotaListClient } from "@/components/anggota-list-client";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { getCurrentAnggota } from "@/lib/auth";
-import { computeStatusTampil } from "@/lib/status";
+import { computeStatusTampil, getPeriodeBulan } from "@/lib/status";
 import { StatusBadge } from "@/components/status-badge";
 import { CheckCircle2, CircleDashed, AlertTriangle } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
@@ -60,7 +60,7 @@ export default async function DaftarPage({
   const cfg = CONFIG[jenis];
   const Icon = cfg.icon;
   const me = await getCurrentAnggota();
-  const [anggota, settings] = await Promise.all([
+  const [anggota, settings, activeStruk] = await Promise.all([
     db.anggota.findMany({
       orderBy: [{ gender: "asc" }, { namaLengkap: "asc" }],
       select: {
@@ -72,13 +72,20 @@ export default async function DaftarPage({
       },
     }),
     getSettings(),
+    db.struk.findMany({
+      where: { periodeBulan: getPeriodeBulan(), statusStruk: { in: ["PENDING", "APPROVED"] } },
+      select: { anggotaId: true, statusStruk: true },
+    }),
   ]);
+
+  const activeByAnggota = new Map(activeStruk.map((s) => [s.anggotaId, s.statusStruk]));
 
   const now = new Date();
   const list = anggota
     .map((a) => ({
       ...a,
       statusTampil: computeStatusTampil(a.status, settings.deadlineTanggal, now),
+      receiptAktif: activeByAnggota.get(a.id) ?? null,
     }))
     .filter((a) => a.statusTampil === cfg.filter);
 
