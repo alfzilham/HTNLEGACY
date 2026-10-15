@@ -106,9 +106,12 @@ export function resetRateLimit(key: string): void {
  * Ekstrak IP dari request. Akun X-Forwarded-For jika ada (di belakang proxy).
  */
 export function getClientIp(req: Request): string {
-  const xff = req.headers.get("x-forwarded-for");
-  if (xff) return xff.split(",")[0].trim();
+  // Caddy dikonfigurasi untuk menimpa kedua header ini dengan remote_host.
+  // Prioritaskan X-Real-IP agar tidak mengambil nilai spoofed paling kiri
+  // dari rantai X-Forwarded-For yang dikirim client.
   const xri = req.headers.get("x-real-ip");
   if (xri) return xri;
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0].trim();
   return "unknown";
 }

@@ -61,6 +61,21 @@ export async function POST(
     const now = new Date();
 
     if (action === "approve") {
+      const approvedForPeriod = await db.struk.findFirst({
+        where: {
+          id: { not: struk.id },
+          anggotaId: struk.anggotaId,
+          periodeBulan: struk.periodeBulan,
+          statusStruk: "APPROVED",
+        },
+        select: { id: true },
+      });
+      if (approvedForPeriod) {
+        return NextResponse.json(
+          { error: "Anggota sudah memiliki struk approved untuk periode ini." },
+          { status: 409 }
+        );
+      }
       // Approve: update struk + anggota LUNAS + transaksi MASUK otomatis
       await db.$transaction([
         db.struk.update({
@@ -105,6 +120,16 @@ export async function POST(
       );
     }
 
+    const approvedForPeriod = await db.struk.findFirst({
+      where: {
+        id: { not: struk.id },
+        anggotaId: struk.anggotaId,
+        periodeBulan: struk.periodeBulan,
+        statusStruk: "APPROVED",
+      },
+      select: { id: true },
+    });
+
     await db.$transaction([
       db.struk.update({
         where: { id },
@@ -114,10 +139,12 @@ export async function POST(
           verifiedAt: now,
         },
       }),
-      // Anggota.status kembali ke BELUM_LUNAS (TERTUNGGAK akan derived jika lewat deadline)
+      // Pertahankan LUNAS jika ada pembayaran approved lain pada periode ini.
       db.anggota.update({
         where: { id: struk.anggotaId },
-        data: { status: "BELUM_LUNAS" },
+        data: {
+          status: struk.anggota.status === "LUNAS" || approvedForPeriod ? "LUNAS" : "BELUM_LUNAS",
+        },
       }),
     ]);
 

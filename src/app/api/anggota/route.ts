@@ -14,8 +14,12 @@ import { computeStatusTampil } from "@/lib/status";
 import { isValidGender, isValidStatusIuranStored } from "@/lib/constants";
 import { encryptPassword } from "@/lib/crypto";
 import { isValidIndoPhone, normalizePhone } from "@/lib/status";
+import { getAnggotaSession } from "@/lib/session";
 
 export async function GET() {
+  if (!(await getAnggotaSession()) && !(await isAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const [anggota, settings] = await Promise.all([
     db.anggota.findMany({
       orderBy: [{ gender: "asc" }, { namaLengkap: "asc" }],

@@ -11,8 +11,12 @@ import { isAdmin } from "@/lib/auth";
 import { getPeriodeBulan } from "@/lib/status";
 import { isValidTipeTransaksi } from "@/lib/constants";
 import { auditLog } from "@/lib/audit";
+import { getAnggotaSession } from "@/lib/session";
 
 export async function GET(req: NextRequest) {
+  if (!(await getAnggotaSession()) && !(await isAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const url = new URL(req.url);
   const bulan = url.searchParams.get("bulan") ?? getPeriodeBulan();
 
